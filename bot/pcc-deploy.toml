@@ -1,0 +1,6 @@
+agent_name = "squobert"
+image = "chadbailey59/squobert:0.1"
+secret_set = "squobert-secrets"
+
+[scaling]
+	min_instances = 0
