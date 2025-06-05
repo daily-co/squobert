@@ -2,7 +2,6 @@ import { useCallback, useState, useRef, useEffect } from "react";
 import {
   useRTVIClientEvent,
   useRTVIClientMediaTrack,
-  useRTVIClientTransportState,
   useRTVIClient,
 } from "@pipecat-ai/client-react";
 import { RTVIEvent } from "@pipecat-ai/client-js";
@@ -19,11 +18,7 @@ export function BotDisplay() {
   const [expression, setExpression] = useState<Expression>("resting");
   const [talking, setTalking] = useState(false);
 
-  // Use the transport state
-  const rtviTransportState = useRTVIClientTransportState();
-
-  // Determine connection status
-  const isConnected = ["connected", "ready"].includes(rtviTransportState);
+  // Transport state no longer needed here
   const faceRef = useRef<HTMLDivElement>(null);
   const [isBlinking, setIsBlinking] = useState(false);
   const nextBlinkTimeout = useRef<NodeJS.Timeout>();
@@ -178,9 +173,7 @@ export function BotDisplay() {
     )
   );
 
-  if (!isConnected) {
-    return null;
-  }
+  // Always render the component, regardless of connection status
 
   return (
     <div className={`bot-container ${hasVideoTracks ? "has-video" : ""}`}>

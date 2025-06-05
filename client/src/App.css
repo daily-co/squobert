@@ -109,11 +109,14 @@ button:disabled {
 
 .connect-container {
   position: absolute;
-  top: 50%;
+  top: 20%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, 0);
   z-index: 2;
-  width: 60%;
+  width: 30%;
+  display: flex;
+  justify-content: center;
+  pointer-events: auto;
 }
 
 .disconnect-container {
@@ -125,7 +128,7 @@ button:disabled {
 }
 
 .connect-button {
-  padding: 16px 32px;
+  padding: 12px 12px;
   font-size: 1.6rem;
   background-color: #4caf50;
   color: white;
@@ -133,6 +136,8 @@ button:disabled {
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
+  width: 100%;
+  max-width: 150px;
 }
 
 .connect-button:hover {

@@ -20,14 +20,14 @@ function AppContent() {
   return (
     <div className="app">
       <div className="content-wrapper">
-        {!isConnected && (
-          <div className="connect-container">
-            <ConnectControls />
-          </div>
-        )}
         <div className="app-container">
           <AudioComponent />
           <BotDisplay />
+          {!isConnected && (
+            <div className="connect-container">
+              <ConnectControls />
+            </div>
+          )}
         </div>
       </div>
     </div>
