@@ -1,5 +1,5 @@
 import { type PropsWithChildren, useState } from "react";
-import { RTVIClient } from "@pipecat-ai/client-js";
+import { RTVIClient, RTVIClientParams } from "@pipecat-ai/client-js";
 import { RTVIClientProvider } from "@pipecat-ai/client-react";
 import { DailyTransport } from "@pipecat-ai/daily-transport";
 
@@ -11,6 +11,7 @@ const transport = new DailyTransport();
 
 export function RTVIProvider({ children }: RTVIProviderProps) {
   const [participantId, setParticipantId] = useState("");
+  console.log({ participantId });
   const onConnect = async () => {
     const response = await fetch(
       "https://api.pipecat.daily.co/v1/public/squobert/start",
