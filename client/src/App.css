@@ -60,10 +60,9 @@ button:disabled {
 
 .transport-selection {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 10px;
-  width: 100%;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .segmented-control {
@@ -113,7 +112,7 @@ button:disabled {
   left: 50%;
   transform: translate(-50%, 0);
   z-index: 2;
-  width: 30%;
+  width: 320px;
   display: flex;
   justify-content: center;
   pointer-events: auto;
@@ -128,20 +127,39 @@ button:disabled {
 }
 
 .connect-button {
-  padding: 12px 12px;
-  font-size: 1.6rem;
-  background-color: #4caf50;
+  padding: 10px 10px;
+  font-size: 1.4rem;
   color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
-  width: 100%;
-  max-width: 150px;
+  margin: 0 5px;
+  min-width: 140px;
 }
 
-.connect-button:hover {
+.connect-disconnect-button {
+  background-color: #2196F3;
+}
+
+.mic-button {
+  background-color: #4caf50;
+}
+
+.mic-button.inactive {
+  background-color: #f44336;
+}
+
+.connect-disconnect-button:hover {
+  background-color: #0b7dda;
+}
+
+.mic-button:hover {
   background-color: #45a049;
+}
+
+.mic-button.inactive:hover {
+  background-color: #d32f2f;
 }
 
 .connect-button:disabled {

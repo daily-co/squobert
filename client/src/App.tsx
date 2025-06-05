@@ -5,6 +5,7 @@ import { AudioComponent } from "./components/AudioComponent";
 import "./App.css";
 import { useEffect } from "react";
 import { ConnectControls } from "./components/ConnectControls";
+import { DisconnectControls } from "./components/DisconnectControls";
 
 function AppContent() {
   // Use the transport state
@@ -23,11 +24,9 @@ function AppContent() {
         <div className="app-container">
           <AudioComponent />
           <BotDisplay />
-          {!isConnected && (
-            <div className="connect-container">
-              <ConnectControls />
-            </div>
-          )}
+          <div className="connect-container">
+            {!isConnected ? <ConnectControls /> : <DisconnectControls />}
+          </div>
         </div>
       </div>
     </div>

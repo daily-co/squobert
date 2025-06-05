@@ -36,7 +36,7 @@ export function ConnectControls() {
         <button
           onClick={handleConnect}
           disabled={isConnecting}
-          className="connect-button"
+          className="connect-button connect-disconnect-button"
         >
           {isConnecting ? "Connecting..." : "Connect"}
         </button>

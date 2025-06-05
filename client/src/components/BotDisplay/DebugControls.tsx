@@ -24,27 +24,15 @@ export function DebugControls({
   onHideText,
 }: DebugControlsProps) {
   const client = useRTVIClient();
-  const [micEnabled, setMicEnabled] = useState(true);
   const [camEnabled, setCamEnabled] = useState(true);
 
   useEffect(() => {
     // Initialize state based on client's current state if possible
     // Note: This is a best effort as the client may not expose this state directly
-    setMicEnabled(true);
     setCamEnabled(true);
   }, [client]);
 
-  const handleDisconnect = () => {
-    client?.disconnect();
-  };
 
-  const toggleMic = () => {
-    const newState = !micEnabled;
-    if (client) {
-      client.enableMic(newState);
-      setMicEnabled(newState);
-    }
-  };
 
   const toggleCam = () => {
     const newState = !camEnabled;
@@ -57,13 +45,10 @@ export function DebugControls({
   return (
     <div className="debug-controls">
       <div className="debug-row">
-        <button onClick={handleDisconnect}>Disconnect</button>
         <button onClick={onTalkingToggle} className={talking ? "active" : ""}>
           {talking ? "Stop Talking" : "Start Talking"}
         </button>
-        <button onClick={toggleMic} className={micEnabled ? "active" : ""}>
-          {micEnabled ? "Mic On" : "Mic Off"}
-        </button>
+
         <button onClick={toggleCam} className={camEnabled ? "active" : ""}>
           {camEnabled ? "Camera On" : "Camera Off"}
         </button>

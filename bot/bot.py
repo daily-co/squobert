@@ -165,7 +165,6 @@ async def main(room_url: str, token: str):
         # Kick off the conversation.
         await task.queue_frames(
             [
-                context_aggregator.user().get_context_frame(),
                 RTVIServerMessageFrame(data={"event": "client connected"}),
                 RTVIServerMessageFrame(
                     data={
