@@ -7,11 +7,6 @@ export function DisconnectControls() {
   const [micEnabled, setMicEnabled] = useState(false);
   const { setExpression } = useBotExpression();
 
-  useEffect(() => {
-    // Initialize state based on client's current state if possible
-    setMicEnabled(false);
-  }, [client]);
-
   const handleDisconnect = async () => {
     try {
       if (!client) {
@@ -30,6 +25,7 @@ export function DisconnectControls() {
     const newState = !micEnabled;
     setMicEnabled(newState);
     if (client) {
+      console.log("setting mic to ", newState);
       client.enableMic(newState);
     }
   };
@@ -37,14 +33,19 @@ export function DisconnectControls() {
   return (
     <div className="connect-controls">
       <div className="transport-selection">
-        <button onClick={handleDisconnect} className="connect-button connect-disconnect-button">
+        <button
+          onClick={handleDisconnect}
+          className="connect-button connect-disconnect-button"
+        >
           Disconnect
         </button>
         <button
           onClick={handleMicToggle}
-          className={`connect-button mic-button ${!micEnabled ? "inactive" : ""}`}
+          className={`connect-button mic-button ${
+            !micEnabled ? "inactive" : ""
+          }`}
         >
-          {micEnabled ? "Mic On" : "Mic Off"}
+          {micEnabled ? "Mute Mic" : "Mic Muted"}
         </button>
       </div>
     </div>
