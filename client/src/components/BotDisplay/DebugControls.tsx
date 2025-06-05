@@ -1,6 +1,5 @@
 import { Expression } from "./types";
 import { useRTVIClient } from "@pipecat-ai/client-react";
-import { useDaily } from "@daily-co/daily-react";
 import { useState, useEffect } from "react";
 
 interface DebugControlsProps {
@@ -12,7 +11,6 @@ interface DebugControlsProps {
   onDebugTextChange: (text: string) => void;
   onShowText: () => void;
   onHideText: () => void;
-  providerType?: "webrtc" | "daily";
 }
 
 export function DebugControls({
@@ -24,10 +22,8 @@ export function DebugControls({
   onDebugTextChange,
   onShowText,
   onHideText,
-  providerType = "webrtc",
 }: DebugControlsProps) {
   const client = useRTVIClient();
-  const daily = useDaily();
   const [micEnabled, setMicEnabled] = useState(true);
   const [camEnabled, setCamEnabled] = useState(true);
 
@@ -39,31 +35,21 @@ export function DebugControls({
   }, [client]);
 
   const handleDisconnect = () => {
-    if (providerType === "webrtc") {
-      client?.disconnect();
-    } else if (providerType === "daily") {
-      daily?.leave();
-    }
+    client?.disconnect();
   };
 
   const toggleMic = () => {
     const newState = !micEnabled;
-    if (providerType === "webrtc" && client) {
+    if (client) {
       client.enableMic(newState);
-      setMicEnabled(newState);
-    } else if (providerType === "daily" && daily) {
-      daily.setLocalAudio(newState);
       setMicEnabled(newState);
     }
   };
 
   const toggleCam = () => {
     const newState = !camEnabled;
-    if (providerType === "webrtc" && client) {
+    if (client) {
       client.enableCam(newState);
-      setCamEnabled(newState);
-    } else if (providerType === "daily" && daily) {
-      daily.setLocalVideo(newState);
       setCamEnabled(newState);
     }
   };
