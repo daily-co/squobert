@@ -130,6 +130,8 @@ async def main(room_url: str, token: str):
         },
     ]
 
+    stt = DeepgramSTTService(api_key=os.getenv("DEEPGRAM_API_KEY"))
+
     context = OpenAILLMContext(messages)
     context_aggregator = llm.create_context_aggregator(context)
     bot_face = BotFaceProcessor()
@@ -138,6 +140,7 @@ async def main(room_url: str, token: str):
         [
             transport.input(),
             rtvi,
+            stt,
             context_aggregator.user(),
             llm,
             tts,

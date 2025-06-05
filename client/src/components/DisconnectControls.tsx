@@ -1,68 +1,38 @@
 import { useRTVIClient } from "@pipecat-ai/client-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
+import { useBotExpression } from "../providers/BotExpressionProvider";
 
 export function DisconnectControls() {
   const client = useRTVIClient();
-  const [micEnabled, setMicEnabled] = useState(true);
-  const [tempMicState, setTempMicState] = useState<boolean | null>(null);
-  const longPressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const originalMicStateRef = useRef<boolean>(micEnabled);
+  const [micEnabled, setMicEnabled] = useState(false);
+  const { setExpression } = useBotExpression();
 
   useEffect(() => {
     // Initialize state based on client's current state if possible
-    setMicEnabled(true);
+    setMicEnabled(false);
   }, [client]);
 
-  const handleDisconnect = () => {
-    client?.disconnect();
+  const handleDisconnect = async () => {
+    try {
+      if (!client) {
+        throw new Error("RTVI client not available");
+      }
+      // Reset face to resting before disconnecting
+      setExpression("resting");
+      await client.disconnect();
+    } catch (error) {
+      console.error("Failed to disconnect:", error);
+    }
   };
 
-  const setMicState = (enabled: boolean) => {
+  const handleMicToggle = () => {
+    // Simple toggle of mic state
+    const newState = !micEnabled;
+    setMicEnabled(newState);
     if (client) {
-      client.enableMic(enabled);
-      setMicEnabled(enabled);
+      client.enableMic(newState);
     }
   };
-
-  const handleMicMouseDown = () => {
-    // Store original state when button is pressed
-    originalMicStateRef.current = micEnabled;
-
-    // Set a timeout to detect long press (200ms)
-    longPressTimeoutRef.current = setTimeout(() => {
-      // Long press detected - temporarily toggle the mic state
-      setTempMicState(!micEnabled);
-      setMicState(!micEnabled);
-    }, 200);
-  };
-
-  const handleMicMouseUp = () => {
-    // If we have a timeout, it means the button wasn't held long enough
-    if (longPressTimeoutRef.current) {
-      clearTimeout(longPressTimeoutRef.current);
-      longPressTimeoutRef.current = null;
-
-      // Short press - toggle the mic state permanently
-      if (tempMicState === null) {
-        setMicState(!micEnabled);
-      }
-      // Long press ended - revert to original state
-      else {
-        setMicState(originalMicStateRef.current);
-        setTempMicState(null);
-      }
-    }
-  };
-
-  const handleMicMouseLeave = () => {
-    // If mouse leaves while holding, treat it as a mouse up
-    if (longPressTimeoutRef.current) {
-      handleMicMouseUp();
-    }
-  };
-
-  // Determine the actual mic state to display
-  const displayMicState = tempMicState !== null ? tempMicState : micEnabled;
 
   return (
     <div className="connect-controls">
@@ -71,14 +41,10 @@ export function DisconnectControls() {
           Disconnect
         </button>
         <button
-          onMouseDown={handleMicMouseDown}
-          onMouseUp={handleMicMouseUp}
-          onMouseLeave={handleMicMouseLeave}
-          onTouchStart={handleMicMouseDown}
-          onTouchEnd={handleMicMouseUp}
-          className={`connect-button mic-button ${!displayMicState ? "inactive" : ""}`}
+          onClick={handleMicToggle}
+          className={`connect-button mic-button ${!micEnabled ? "inactive" : ""}`}
         >
-          {displayMicState ? "Mic On" : "Mic Off"}
+          {micEnabled ? "Mic On" : "Mic Off"}
         </button>
       </div>
     </div>

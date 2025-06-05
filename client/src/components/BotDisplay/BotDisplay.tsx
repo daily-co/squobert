@@ -3,8 +3,10 @@ import {
   useRTVIClientEvent,
   useRTVIClientMediaTrack,
   useRTVIClient,
+  useRTVIClientTransportState,
 } from "@pipecat-ai/client-react";
 import { RTVIEvent } from "@pipecat-ai/client-js";
+import { useBotExpression } from "../../providers/BotExpressionProvider";
 import "./BotDisplay.css";
 import { TextPanel } from "../TextPanel/TextPanel";
 import { BotFace } from "./BotFace";
@@ -15,10 +17,10 @@ import { VideoDisplay } from "../VideoDisplay";
 // No props needed anymore
 
 export function BotDisplay() {
-  const [expression, setExpression] = useState<Expression>("resting");
+  const { expression, setExpression } = useBotExpression();
   const [talking, setTalking] = useState(false);
+  const transportState = useRTVIClientTransportState();
 
-  // Transport state no longer needed here
   const faceRef = useRef<HTMLDivElement>(null);
   const [isBlinking, setIsBlinking] = useState(false);
   const nextBlinkTimeout = useRef<NodeJS.Timeout>();
@@ -44,6 +46,18 @@ export function BotDisplay() {
       setHasVideoTracks(Object.values(participants).some((p) => p.video));
     }
   }, [participants]);
+
+  // Set thinking face during connecting state
+  useEffect(() => {
+    if (
+      transportState === "initializing" ||
+      transportState === "authenticating"
+    ) {
+      setExpression("kawaii");
+    } else if (transportState === "connected" || transportState === "ready") {
+      setExpression("thinking");
+    }
+  }, [transportState]);
 
   useEffect(() => {
     if (botAudioTrack) {
@@ -123,7 +137,6 @@ export function BotDisplay() {
         event: string;
         data?: { expression: string; text?: string; duration?: number };
       }) => {
-
         console.log("😹 RTVI Server message received", serverMessage);
         switch (serverMessage.event) {
           case "bot_started_speaking":

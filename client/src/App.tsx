@@ -6,6 +6,8 @@ import "./App.css";
 import { useEffect } from "react";
 import { ConnectControls } from "./components/ConnectControls";
 import { DisconnectControls } from "./components/DisconnectControls";
+import { DebugScreenProvider } from "./providers/DebugScreenProvider";
+import { BotExpressionProvider } from "./providers/BotExpressionProvider";
 
 function AppContent() {
   // Use the transport state
@@ -36,7 +38,11 @@ function AppContent() {
 function App() {
   return (
     <VideoProvider>
-      <AppContent />
+      <BotExpressionProvider>
+        <DebugScreenProvider>
+          <AppContent />
+        </DebugScreenProvider>
+      </BotExpressionProvider>
     </VideoProvider>
   );
 }

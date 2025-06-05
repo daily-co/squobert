@@ -3,11 +3,13 @@ import {
   useRTVIClient,
   useRTVIClientTransportState,
 } from "@pipecat-ai/client-react";
+import { useDebugScreen } from "../providers/DebugScreenProvider";
 
 export function ConnectControls() {
   const client = useRTVIClient();
   const transportState = useRTVIClientTransportState();
   const [isConnecting, setIsConnecting] = useState(false);
+  const { setShowDebugScreen } = useDebugScreen();
 
   // Determine if connected
   const isConnected = ["connected", "ready"].includes(transportState);
@@ -26,6 +28,10 @@ export function ConnectControls() {
     }
   };
 
+  const handleShowDebugScreen = () => {
+    setShowDebugScreen(true);
+  };
+
   if (isConnected) {
     return null;
   }
@@ -33,13 +39,22 @@ export function ConnectControls() {
   return (
     <div className="connect-controls">
       <div className="transport-selection">
-        <button
-          onClick={handleConnect}
-          disabled={isConnecting}
-          className="connect-button connect-disconnect-button"
-        >
-          {isConnecting ? "Connecting..." : "Connect"}
-        </button>
+        <div className="connect-button-container">
+          <div className="spacer"></div>
+          <button
+            onClick={handleConnect}
+            disabled={isConnecting}
+            className="connect-button connect-disconnect-button"
+          >
+            {isConnecting ? "Connecting..." : "Connect"}
+          </button>
+          <button 
+            onClick={handleShowDebugScreen}
+            className="info-button"
+          >
+            i
+          </button>
+        </div>
       </div>
     </div>
   );
