@@ -1,5 +1,5 @@
 import { useRTVIClient } from "@pipecat-ai/client-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useBotExpression } from "../providers/BotExpressionProvider";
 
 export function DisconnectControls() {
