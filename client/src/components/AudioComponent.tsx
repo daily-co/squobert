@@ -1,15 +1,7 @@
 import { RTVIClientAudio } from "@pipecat-ai/client-react";
-import { DailyAudio } from "./DailyComponents/DailyAudio";
-import { ProviderType } from "../providers/RTVIProvider";
 
-interface AudioComponentProps {
-  providerType: ProviderType;
-}
+// No props needed anymore
 
-export function AudioComponent({ providerType }: AudioComponentProps) {
-  if (providerType === "daily") {
-    return <DailyAudio />;
-  } else {
-    return <RTVIClientAudio />;
-  }
+export function AudioComponent() {
+  return <RTVIClientAudio />;
 }

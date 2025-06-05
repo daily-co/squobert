@@ -1,54 +1,83 @@
-import { type PropsWithChildren } from "react";
+import { type PropsWithChildren, useState } from "react";
 import { RTVIClient } from "@pipecat-ai/client-js";
 import { RTVIClientProvider } from "@pipecat-ai/client-react";
-import { SmallWebRTCTransport } from "@pipecat-ai/small-webrtc-transport";
 import { DailyTransport } from "@pipecat-ai/daily-transport";
 
-export type ProviderType = "webrtc" | "daily";
+export type ProviderType = "webrtc";
 
-interface RTVIProviderProps extends PropsWithChildren {
-  hostname?: string;
-  providerType: ProviderType;
-}
+interface RTVIProviderProps extends PropsWithChildren {}
 
-export function RTVIProvider({
-  children,
-  hostname = "http://localhost:7860",
-  providerType,
-}: RTVIProviderProps) {
-  let rtviConfig;
+const transport = new DailyTransport();
 
-  if (providerType === "webrtc") {
-    console.log("Configuring WebRTC Transport...");
-    const transport = new SmallWebRTCTransport();
-    rtviConfig = {
-      transport,
-      enableCam: false,
-      enableMic: true,
-      params: {
-        baseUrl: `${hostname}/api/offer`,
-      },
-    };
-    // @ts-expect-error customConnectHandler is a secret or something
-    rtviConfig.customConnectHandler = () => Promise.resolve();
-  } else {
-    // Daily transport configuration
-    console.log("Configuring Daily Transport...");
-    const transport = new DailyTransport(); // This would be replaced with DailyTransport in a real implementation
-    rtviConfig = {
-      transport,
-      params: {
-        baseUrl: hostname,
-        endpoints: {
-          connect: "/daily/connect",
+export function RTVIProvider({ children }: RTVIProviderProps) {
+  const [participantId, setParticipantId] = useState("");
+  const onConnect = async () => {
+    const response = await fetch(
+      "https://api.pipecat.daily.co/v1/public/squobert/start",
+      {
+        method: "POST",
+        mode: "cors",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer pk_be409b96-5027-4268-b399-57b5652fa0c3`,
         },
+        body: JSON.stringify({
+          createDailyRoom: true,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to connect to Pipecat");
+    }
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+
+    return new Response(
+      JSON.stringify({
+        room_url: data.dailyRoom,
+        token: data.dailyToken,
+      }),
+      { status: 200 }
+    );
+  };
+
+  const client = new RTVIClient({
+    callbacks: {
+      onParticipantJoined: (participant) => {
+        setParticipantId(participant.id || "");
       },
-      enableMic: true,
-      enableCam: false,
-    };
-  }
-
-  const client = new RTVIClient(rtviConfig);
-
+      onTrackStarted(_track, participant) {
+        if (participant?.id && participant.local)
+          setParticipantId(participant.id);
+      },
+    },
+    enableCam: false,
+    enableMic: true,
+    params: {
+      baseUrl: "noop",
+    },
+    transport,
+    customConnectHandler: (async (_params, timeout) => {
+      try {
+        const response = await onConnect();
+        clearTimeout(timeout);
+        if (response.ok) {
+          return response.json();
+        }
+        return Promise.reject(
+          new Error(`Connection failed: ${response.status}`)
+        );
+      } catch (err) {
+        return Promise.reject(err);
+      }
+    }) as (
+      params: RTVIClientParams,
+      timeout: NodeJS.Timeout | undefined,
+      abortController: AbortController
+    ) => Promise<void>,
+  });
   return <RTVIClientProvider client={client}>{children}</RTVIClientProvider>;
 }

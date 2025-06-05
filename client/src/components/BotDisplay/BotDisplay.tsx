@@ -2,15 +2,8 @@ import { useCallback, useState, useRef, useEffect } from "react";
 import {
   useRTVIClientEvent,
   useRTVIClientMediaTrack,
-  useRTVIClientTransportState,
   useRTVIClient,
 } from "@pipecat-ai/client-react";
-import {
-  useMeetingState,
-  useAppMessage,
-  useParticipantIds,
-  useAudioTrack,
-} from "@daily-co/daily-react";
 import { RTVIEvent } from "@pipecat-ai/client-js";
 import "./BotDisplay.css";
 import { TextPanel } from "../TextPanel/TextPanel";
@@ -18,42 +11,22 @@ import { BotFace } from "./BotFace";
 import { DebugControls } from "./DebugControls";
 import { Expression } from "./types";
 import { VideoDisplay } from "../VideoDisplay";
-import { ProviderType } from "../../providers/RTVIProvider";
 
-interface BotDisplayProps {
-  providerType?: ProviderType;
-}
+// No props needed anymore
 
-export function BotDisplay({ providerType = "webrtc" }: BotDisplayProps) {
+export function BotDisplay() {
   const [expression, setExpression] = useState<Expression>("resting");
   const [talking, setTalking] = useState(false);
 
-  // Use the appropriate transport state based on provider type
-  const rtviTransportState = useRTVIClientTransportState();
-  const dailyMeetingState = useMeetingState();
-  const squobertId = useParticipantIds({ filter: "owner" })[0];
-
-  // Determine connection status based on active provider
-  const isConnected =
-    providerType === "webrtc"
-      ? ["connected", "ready"].includes(rtviTransportState)
-      : dailyMeetingState === "joined-meeting";
+  // Transport state no longer needed here
   const faceRef = useRef<HTMLDivElement>(null);
   const [isBlinking, setIsBlinking] = useState(false);
   const nextBlinkTimeout = useRef<NodeJS.Timeout>();
 
   const [isLoud, setIsLoud] = useState(false);
 
-  const botAudioTrack =
-    providerType === "webrtc"
-      ? useRTVIClientMediaTrack("audio", "bot")
-      : useAudioTrack(squobertId)?.track;
+  const botAudioTrack = useRTVIClientMediaTrack("audio", "bot");
   const client = useRTVIClient();
-  const dailyParticipantIds = useParticipantIds({
-    filter: (p, index, arr) => {
-      return p.tracks.video.state === "playable" && !p.local;
-    },
-  });
 
   const [showingText, setShowingText] = useState(false);
   const [displayText, setDisplayText] = useState("");
@@ -65,19 +38,12 @@ export function BotDisplay({ providerType = "webrtc" }: BotDisplayProps) {
   const participants = client?.tracks();
   const [hasVideoTracks, setHasVideoTracks] = useState(false);
 
-  // Check for video tracks in WebRTC mode
+  // Check for video tracks
   useEffect(() => {
-    if (providerType === "webrtc" && participants) {
+    if (participants) {
       setHasVideoTracks(Object.values(participants).some((p) => p.video));
     }
-  }, [participants, providerType]);
-
-  // Check for video tracks in Daily mode
-  useEffect(() => {
-    if (providerType === "daily") {
-      setHasVideoTracks(dailyParticipantIds.length > 0);
-    }
-  }, [dailyParticipantIds, providerType]);
+  }, [participants]);
 
   useEffect(() => {
     if (botAudioTrack) {
@@ -147,71 +113,9 @@ export function BotDisplay({ providerType = "webrtc" }: BotDisplayProps) {
     setShowingText(false);
   }, []);
 
-  // Handle Daily app messages when using Daily transport
-  useAppMessage({
-    onAppMessage: useCallback(
-      (event: { data?: any }) => {
-        console.log("Daily app message received", event);
-        if (providerType !== "daily") return; // Only process for Daily
-        // Check if this is a bot server message
-        if (
-          event.data?.label == "rtvi-ai" &&
-          event.data?.type == "server-message"
-        ) {
-          const serverMessage = event.data.data;
-          console.log("😹 Daily Server message received", serverMessage);
+  // Daily app message handling removed
 
-          switch (serverMessage.event) {
-            case "bot_started_speaking":
-              setTalking(true);
-              setExpression("resting");
-              break;
-            case "bot_stopped_speaking":
-              setTalking(false);
-              break;
-            case "expression_change":
-              if (typeof serverMessage.data?.expression === "string") {
-                const newExpression = serverMessage.data
-                  .expression as Expression;
-                if (newExpression !== "resting") {
-                  setExpression(newExpression);
-                  setTimeout(() => setExpression("resting"), 3000);
-                } else {
-                  setExpression(newExpression);
-                }
-              }
-              break;
-            case "user_started_speaking":
-              setTalking(false);
-              setExpression("listening");
-              break;
-            case "user_stopped_speaking":
-              setTalking(false);
-              setExpression("thinking");
-              break;
-            case "show_text":
-              if (serverMessage.data?.text) {
-                setDisplayText(serverMessage.data.text);
-                setShowingText(true);
-                if (serverMessage.data?.duration) {
-                  setTimeout(
-                    () => setShowingText(false),
-                    serverMessage.data.duration * 1000
-                  );
-                }
-              }
-              break;
-            case "hide_text":
-              setShowingText(false);
-              break;
-          }
-        }
-      },
-      [providerType, handleHideText]
-    ),
-  });
-
-  // Handle RTVI server messages when using WebRTC transport
+  // Handle RTVI server messages
   useRTVIClientEvent(
     RTVIEvent.ServerMessage,
     useCallback(
@@ -219,7 +123,6 @@ export function BotDisplay({ providerType = "webrtc" }: BotDisplayProps) {
         event: string;
         data?: { expression: string; text?: string; duration?: number };
       }) => {
-        if (providerType !== "webrtc") return; // Only process for WebRTC
 
         console.log("😹 RTVI Server message received", serverMessage);
         switch (serverMessage.event) {
@@ -270,9 +173,7 @@ export function BotDisplay({ providerType = "webrtc" }: BotDisplayProps) {
     )
   );
 
-  if (!isConnected) {
-    return null;
-  }
+  // Always render the component, regardless of connection status
 
   return (
     <div className={`bot-container ${hasVideoTracks ? "has-video" : ""}`}>
@@ -298,13 +199,12 @@ export function BotDisplay({ providerType = "webrtc" }: BotDisplayProps) {
         onDebugTextChange={setDebugText}
         onShowText={handleShowText}
         onHideText={handleHideText}
-        providerType={providerType}
       />
 
       {/* Video container for bot video tracks */}
       {hasVideoTracks && (
         <div className="video-container">
-          <VideoDisplay className="video-display" providerType={providerType} />
+          <VideoDisplay className="video-display" />
         </div>
       )}
     </div>
