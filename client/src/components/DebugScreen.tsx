@@ -8,6 +8,7 @@ interface DebugScreenProps {
 export function DebugScreen({ onClose }: DebugScreenProps) {
   const client = useRTVIClient();
   const [clientInfo, setClientInfo] = React.useState<any>({});
+  console.log({ clientInfo });
   const [ipAddresses, setIpAddresses] = React.useState<string[]>([]);
 
   // Function to get local IP addresses
