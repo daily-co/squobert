@@ -1,11 +1,20 @@
 import { useRTVIClient } from "@pipecat-ai/client-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useBotExpression } from "../providers/BotExpressionProvider";
+import { useMicSettings } from "../providers/MicSettingsProvider";
 
 export function DisconnectControls() {
   const client = useRTVIClient();
+  const { startWithMicEnabled } = useMicSettings();
   const [micEnabled, setMicEnabled] = useState(false);
   const { setExpression } = useBotExpression();
+  
+  // Initialize mic state when client is available
+  useEffect(() => {
+    if (client) {
+      setMicEnabled(startWithMicEnabled);
+    }
+  }, [client, startWithMicEnabled]);
 
   const handleDisconnect = async () => {
     try {

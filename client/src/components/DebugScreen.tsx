@@ -1,5 +1,6 @@
 import React from "react";
 import { useRTVIClient } from "@pipecat-ai/client-react";
+import { useMicSettings } from "../providers/MicSettingsProvider";
 
 interface DebugScreenProps {
   onClose: () => void;
@@ -7,6 +8,7 @@ interface DebugScreenProps {
 
 export function DebugScreen({ onClose }: DebugScreenProps) {
   const client = useRTVIClient();
+  const { startWithMicEnabled, setStartWithMicEnabled } = useMicSettings();
   const [clientInfo, setClientInfo] = React.useState<any>({});
   console.log({ clientInfo });
   const [ipAddresses, setIpAddresses] = React.useState<string[]>([]);
@@ -108,6 +110,24 @@ export function DebugScreen({ onClose }: DebugScreenProps) {
                 <li>Detecting IP addresses...</li>
               )}
             </ul>
+          </div>
+
+          <div className="debug-section">
+            <h3>Settings</h3>
+            <div className="setting-item">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={startWithMicEnabled}
+                  onChange={(e) => setStartWithMicEnabled(e.target.checked)}
+                />
+                Start with microphone enabled
+              </label>
+              <p className="setting-description">
+                When checked, the microphone will be enabled when connecting.
+                When unchecked, you'll need to manually enable the mic after connecting.
+              </p>
+            </div>
           </div>
 
           <div className="debug-section">

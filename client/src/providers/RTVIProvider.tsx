@@ -2,6 +2,7 @@ import { type PropsWithChildren, useState } from "react";
 import { RTVIClient, RTVIClientParams } from "@pipecat-ai/client-js";
 import { RTVIClientProvider } from "@pipecat-ai/client-react";
 import { DailyTransport } from "@pipecat-ai/daily-transport";
+import { useMicSettings } from "./MicSettingsProvider";
 
 export type ProviderType = "webrtc";
 
@@ -11,6 +12,7 @@ const transport = new DailyTransport();
 
 export function RTVIProvider({ children }: RTVIProviderProps) {
   const [participantId, setParticipantId] = useState("");
+  const { startWithMicEnabled } = useMicSettings();
   console.log({ participantId });
   const onConnect = async () => {
     const response = await fetch(
@@ -20,7 +22,7 @@ export function RTVIProvider({ children }: RTVIProviderProps) {
         mode: "cors",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer pk_be409b96-5027-4268-b399-57b5652fa0c3`,
+          Authorization: `Bearer pk_YOUR_KEY_HERE`,
         },
         body: JSON.stringify({
           createDailyRoom: true,
@@ -56,7 +58,7 @@ export function RTVIProvider({ children }: RTVIProviderProps) {
       },
     },
     enableCam: false,
-    enableMic: true,
+    enableMic: startWithMicEnabled, // Use the mic setting from context
     params: {
       baseUrl: "noop",
     },

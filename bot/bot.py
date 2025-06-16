@@ -137,7 +137,9 @@ async def main(room_url: str, token: str):
     pipeline = Pipeline(
         [
             transport.input(),
+            stt,
             rtvi,
+
             context_aggregator.user(),
             llm,
             tts,
