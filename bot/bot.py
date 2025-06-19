@@ -10,6 +10,7 @@ import random
 import aiohttp
 from dotenv import load_dotenv
 from loguru import logger
+from pipecat.audio.filters.krisp_filter import KrispFilter
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.frames.frames import (
     BotStartedSpeakingFrame,
@@ -138,7 +139,6 @@ async def main(room_url: str, token: str):
     pipeline = Pipeline(
         [
             transport.input(),
-            stt,
             rtvi,
             context_aggregator.user(),
             llm,
