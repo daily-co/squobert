@@ -107,6 +107,7 @@ async def main(room_url: str, token: str):
         token,
         "bot",
         DailyParams(
+            audio_in_filter=KrispFilter(),  # Add Krisp filter here
             audio_out_enabled=True,
             transcription_enabled=True,
             vad_enabled=True,
@@ -139,7 +140,6 @@ async def main(room_url: str, token: str):
             transport.input(),
             stt,
             rtvi,
-
             context_aggregator.user(),
             llm,
             tts,

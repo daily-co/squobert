@@ -22,7 +22,7 @@ export function RTVIProvider({ children }: RTVIProviderProps) {
         mode: "cors",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer pk_YOUR_KEY_HERE`,
+          Authorization: `Bearer pk_7f7844e5-11e9-4ba1-8fda-4d62e214e05b`,
         },
         body: JSON.stringify({
           createDailyRoom: true,

@@ -1,6 +1,7 @@
 agent_name = "squobert"
-image = "chadbailey59/squobert:0.1"
+image = "chadbailey59/squobert:0.2"
 secret_set = "squobert-secrets"
+enable_krisp = true
 
 [scaling]
 	min_instances = 0
