@@ -10,19 +10,25 @@ import random
 import aiohttp
 from dotenv import load_dotenv
 from loguru import logger
-from pipecat.audio.filters.krisp_filter import KrispFilter
+from pipecat.audio.turn.smart_turn.local_smart_turn_v3 import LocalSmartTurnAnalyzerV3
 from pipecat.audio.vad.silero import SileroVADAnalyzer
+from pipecat.audio.vad.vad_analyzer import VADParams
 from pipecat.frames.frames import (
     BotStartedSpeakingFrame,
     BotStoppedSpeakingFrame,
     Frame,
     LLMMessagesFrame,
+    LLMRunFrame,
     UserStartedSpeakingFrame,
     UserStoppedSpeakingFrame,
 )
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
+from pipecat.processors.aggregators.llm_context import LLMContext
+from pipecat.processors.aggregators.llm_response_universal import (
+    LLMContextAggregatorPair,
+)
 from pipecat.processors.aggregators.openai_llm_context import OpenAILLMContext
 from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
 from pipecat.processors.frameworks.rtvi import (
@@ -31,9 +37,14 @@ from pipecat.processors.frameworks.rtvi import (
     RTVIProcessor,
     RTVIServerMessageFrame,
 )
+from pipecat.runner.types import RunnerArguments
+from pipecat.runner.utils import create_transport
 from pipecat.services.cartesia.tts import CartesiaTTSService
+from pipecat.services.deepgram.stt import DeepgramSTTService
 from pipecat.services.openai.llm import OpenAILLMService
-from pipecat.transports.services.daily import DailyParams, DailyTransport
+from pipecat.transports.base_transport import BaseTransport, TransportParams
+from pipecat.transports.daily.transport import DailyParams
+from pipecat.transports.services.daily import DailyTransport
 from pipecatcloud.agent import DailySessionArguments
 
 emotions = ["resting", "laughing", "kawaii", "nervous"]
@@ -94,27 +105,10 @@ class BotFaceProcessor(FrameProcessor):
         await self.push_frame(frame, direction)
 
 
-async def main(room_url: str, token: str):
-    """Main pipeline setup and execution function.
+async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
+    logger.info(f"Starting bot")
 
-    Args:
-        room_url: The Daily room URL
-        token: The Daily room token
-    """
-    logger.debug("Starting bot in room: {}", room_url)
-
-    transport = DailyTransport(
-        room_url,
-        token,
-        "bot",
-        DailyParams(
-            audio_in_filter=KrispFilter(),  # Add Krisp filter here
-            audio_out_enabled=True,
-            transcription_enabled=True,
-            vad_enabled=True,
-            vad_analyzer=SileroVADAnalyzer(),
-        ),
-    )
+    stt = DeepgramSTTService(api_key=os.getenv("DEEPGRAM_API_KEY"))
 
     tts = CartesiaTTSService(
         api_key=os.getenv("CARTESIA_API_KEY"),
@@ -140,6 +134,7 @@ async def main(room_url: str, token: str):
         [
             transport.input(),
             rtvi,
+            stt,
             context_aggregator.user(),
             llm,
             tts,
@@ -194,45 +189,30 @@ async def main(room_url: str, token: str):
     await runner.run(task)
 
 
-async def bot(args: DailySessionArguments):
-    """Main bot entry point compatible with the FastAPI route handler.
+async def bot(runner_args: RunnerArguments):
+    """Main bot entry point for the bot starter."""
 
-    Args:
-        room_url: The Daily room URL
-        token: The Daily room token
-        body: The configuration object from the request body
-        session_id: The session ID for logging
-    """
-    logger.info(f"Bot process initialized {args.room_url} {args.token}")
+    transport_params = {
+        "daily": lambda: DailyParams(
+            audio_in_enabled=True,
+            audio_out_enabled=True,
+            vad_analyzer=SileroVADAnalyzer(params=VADParams(stop_secs=0.2)),
+            turn_analyzer=LocalSmartTurnAnalyzerV3(),
+        ),
+        "webrtc": lambda: TransportParams(
+            audio_in_enabled=True,
+            audio_out_enabled=True,
+            vad_analyzer=SileroVADAnalyzer(params=VADParams(stop_secs=0.2)),
+            turn_analyzer=LocalSmartTurnAnalyzerV3(),
+        ),
+    }
 
-    try:
-        await main(args.room_url, args.token)
-        logger.info("Bot process completed")
-    except Exception as e:
-        logger.exception(f"Error in bot process: {str(e)}")
-        raise
+    transport = await create_transport(runner_args, transport_params)
 
-
-# Local development functions
-async def local_main():
-    """Function for local development testing."""
-    try:
-        async with aiohttp.ClientSession() as session:
-            (room_url, token) = await configure(session)
-            logger.warning("_")
-            logger.warning("_")
-            logger.warning(f"Talk to your voice agent here: {room_url}")
-            logger.warning("_")
-            logger.warning("_")
-            webbrowser.open(room_url)
-            await main(room_url, token)
-    except Exception as e:
-        logger.exception(f"Error in local development mode: {e}")
+    await run_bot(transport, runner_args)
 
 
-# Local development entry point
-if LOCAL_RUN and __name__ == "__main__":
-    try:
-        asyncio.run(local_main())
-    except Exception as e:
-        logger.exception(f"Failed to run in local mode: {e}")
+if __name__ == "__main__":
+    from pipecat.runner.run import main
+
+    main()

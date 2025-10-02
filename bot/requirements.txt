@@ -1,3 +1,4 @@
+aiohttp
 pipecatcloud
-pipecat-ai[cartesia,daily,openai,silero]>=0.0.58
+pipecat-ai[cartesia,daily,deepgram,local-smart-turn-v3,openai,silero]>=0.0.87
 python-dotenv~=1.0.1
