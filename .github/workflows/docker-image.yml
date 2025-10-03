@@ -7,8 +7,11 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./bot
 
     steps:
     - name: Checkout
@@ -30,9 +33,17 @@ jobs:
     - name: Build and Push
       uses: docker/build-push-action@v5
       with:
-        context: ./bot
         platforms: linux/arm64
         push: true
         tags: |
-          pluot/squobert:latest
-          pluot/squobert:${{ steps.date.outputs.date }}
+          ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:latest
+          ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:${{ steps.date.outputs.date }}
+    
+    - name: Install pipecatcloud
+      run: pip install pipecatcloud
+    
+    - name: Deploy to Pipecat Cloud
+      env:
+        PIPECAT_API_KEY: ${{ secrets.PCC_API_KEY }}
+      run: |
+        pcc deploy -f
