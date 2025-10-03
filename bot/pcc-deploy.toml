@@ -1,6 +1,7 @@
 agent_name = "squobert"
-image = "chadbailey59/squobert:0.2"
+image = "pluot/squobert:latest"
 secret_set = "squobert-secrets"
+image_credentials = "cb-pluot-image-pull-secret"
 enable_krisp = true
 
 [scaling]
