@@ -9,12 +9,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./bot
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+
     - name: Get date
       id: date
       run: echo "date=$(date +'%F')" >> $GITHUB_OUTPUT
@@ -31,6 +30,7 @@ jobs:
     - name: Build and Push
       uses: docker/build-push-action@v5
       with:
+        context: ./bot
         platforms: linux/arm64
         push: true
         tags: |
