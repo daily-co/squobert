@@ -10,6 +10,7 @@ import random
 import aiohttp
 from dotenv import load_dotenv
 from loguru import logger
+
 from pipecat.audio.turn.smart_turn.local_smart_turn_v3 import LocalSmartTurnAnalyzerV3
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.audio.vad.vad_analyzer import VADParams
@@ -46,21 +47,10 @@ from pipecat.transports.base_transport import BaseTransport, TransportParams
 from pipecat.transports.daily.transport import DailyParams
 from pipecat.transports.services.daily import DailyTransport
 from pipecatcloud.agent import DailySessionArguments
+from pipecat_tail.runner import TailRunner
 
 emotions = ["resting", "laughing", "kawaii", "nervous"]
 
-# Check if we're in local development mode
-LOCAL_RUN = os.getenv("LOCAL_RUN")
-if LOCAL_RUN:
-    import asyncio
-    import webbrowser
-
-    try:
-        from local_runner import configure
-    except ImportError:
-        logger.error(
-            "Could not import local_runner module. Local development mode may not work."
-        )
 
 # Load environment variables
 load_dotenv(override=True)
@@ -106,7 +96,7 @@ class BotFaceProcessor(FrameProcessor):
 
 
 async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
-    logger.info(f"Starting bot")
+    logger.info("Starting bot")
 
     stt = DeepgramSTTService(api_key=os.getenv("DEEPGRAM_API_KEY"))
 
@@ -155,10 +145,9 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
         ),
     )
 
-    @transport.event_handler("on_first_participant_joined")
-    async def on_first_participant_joined(transport, participant):
-        logger.info("First participant joined: {}", participant["id"])
-        await transport.capture_participant_transcription(participant["id"])
+    @transport.event_handler("on_client_connected")
+    async def on_client_connected(transport, client):
+        logger.info("Client connected")
         # Kick off the conversation.
         await task.queue_frames(
             [
@@ -177,14 +166,15 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
                 "content": "Start with a one-sentence introduction, including your name.",
             }
         )
-        await task.queue_frames([LLMMessagesFrame(messages)])
+        await task.queue_frames([LLMRunFrame()])
 
-    @transport.event_handler("on_participant_left")
-    async def on_participant_left(transport, participant, reason):
-        logger.info("Participant left: {}", participant)
+    @transport.event_handler("on_client_disconnected")
+    async def on_participant_left(transport, client):
+        logger.info("Client disconnected")
         await task.cancel()
 
-    runner = PipelineRunner()
+    runner = PipelineRunner(handle_sigint=runner_args.handle_sigint)
+    # runner = TailRunner(handle_sigint=runner_args.handle_sigint)
 
     await runner.run(task)
 

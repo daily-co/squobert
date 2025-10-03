@@ -1,4 +1,7 @@
 aiohttp
+aiortc
 pipecatcloud
-pipecat-ai[cartesia,daily,deepgram,local-smart-turn-v3,openai,silero]>=0.0.87
+pipecat-ai[cartesia,daily,deepgram,local-smart-turn-v3,openai,silero,webrtc]>=0.0.87
+pipecat-ai-small-webrtc-prebuilt
+pipecat-ai-tail
 python-dotenv~=1.0.1
