@@ -32,4 +32,4 @@ jobs:
         push: true
         tags: |
           pluot/squobert:latest
-          pluot/squobert:$(date +%F)
+          pluot/squobert:$(date +'%F')
