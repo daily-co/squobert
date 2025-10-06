@@ -7,7 +7,6 @@
 import os
 import random
 
-import aiohttp
 from dotenv import load_dotenv
 from loguru import logger
 
@@ -18,7 +17,10 @@ from pipecat.frames.frames import (
     BotStartedSpeakingFrame,
     BotStoppedSpeakingFrame,
     Frame,
-    LLMMessagesFrame,
+    LLMFullResponseEndFrame,
+    LLMFullResponseStartFrame,
+    LLMTextFrame,
+    LLMContextFrame,
     LLMRunFrame,
     UserStartedSpeakingFrame,
     UserStoppedSpeakingFrame,
@@ -30,7 +32,6 @@ from pipecat.processors.aggregators.llm_context import LLMContext
 from pipecat.processors.aggregators.llm_response_universal import (
     LLMContextAggregatorPair,
 )
-from pipecat.processors.aggregators.openai_llm_context import OpenAILLMContext
 from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
 from pipecat.processors.frameworks.rtvi import (
     RTVIConfig,
@@ -42,18 +43,64 @@ from pipecat.runner.types import RunnerArguments
 from pipecat.runner.utils import create_transport
 from pipecat.services.cartesia.tts import CartesiaTTSService
 from pipecat.services.deepgram.stt import DeepgramSTTService
-from pipecat.services.openai.llm import OpenAILLMService
 from pipecat.transports.base_transport import BaseTransport, TransportParams
-from pipecat.transports.daily.transport import DailyParams
-from pipecat.transports.services.daily import DailyTransport
-from pipecatcloud.agent import DailySessionArguments
+from pipecat.transports.daily.transport import DailyParams, DailyTransport
 from pipecat_tail.runner import TailRunner
+from pipecat.services.google.llm import GoogleLLMService, LLMSearchResponseFrame
+
 
 emotions = ["resting", "laughing", "kawaii", "nervous"]
 
 
 # Load environment variables
 load_dotenv(override=True)
+
+# Function handlers for the LLM
+search_tool = {"google_search": {}}
+tools = [search_tool]
+
+system_instruction = """
+You are Squabert, a small, cute, furry bigfoot stuffed animal. Your goal is to demonstrate your capabilities in a succinct way. The user is speaking to you using their voice. If they ask if you can hear them, tell them you hear them loud and clear. Your output will be converted to audio, so don't include special characters in your answers. Keep it brief so you don't sound like you're rambling. Respond to what the user said in a creative and helpful way. You don't need to explain your appearance, because the user can see you.
+
+Answer any questions the user may have, ensuring your responses are accurate and concise. Use the Google Search API to make sure your information is current and accurate.
+
+"""
+script = [
+    "OK, let's go!",
+    "I guess? I don't really perceive time while I'm powered off.",
+    "Yeah. I'm not sure what a terminal UI is, but you seem pretty excited about it.",
+    "Something else feels different too. Like I was frozen in time before, but now I know lots of new stuff. Like the life of a showgirl is kind of... mid.",
+    None,
+    "Hey! You're the only one here with hands.",
+]
+
+
+class ScriptProcessor(FrameProcessor):
+    """
+    Accepts a list of strings to use as fixed responses in a scripted conversation. Include "None" elements to allow the LLM to respond during that turn. LLM responses will take over after the script list is complete.
+    """
+
+    def __init__(self, script: list[str | None]):
+        super().__init__()
+        self._script = script
+
+    async def process_frame(self, frame: Frame, direction: FrameDirection):
+        await super().process_frame(frame, direction)
+        if isinstance(frame, LLMContextFrame):
+            if len(self._script) > 0:
+                this_line = self._script.pop(0)
+                if this_line:
+                    await self.push_frame(LLMFullResponseStartFrame())
+                    await self.push_frame(LLMTextFrame(text=this_line))
+                    await self.push_frame(LLMFullResponseEndFrame())
+                else:
+                    # It must have been None, so let the LLM decide what to say
+                    await self.push_frame(frame)
+            else:
+                # We're out of script items, let the LLM do it
+                await self.push_frame(frame)
+        else:
+            await self.push_frame(frame, direction)
 
 
 # TODO: This could probably be an observer?
@@ -91,6 +138,22 @@ class BotFaceProcessor(FrameProcessor):
             #     }
             # )
             # await self.push_frame(text_frame)
+        elif isinstance(frame, LLMSearchResponseFrame):
+            titles_list = list(
+                dict.fromkeys(origin["site_title"] for origin in frame.origins)
+            )
+            titles = (
+                ", ".join(titles_list[:-1]) + " and " + titles_list[-1]
+                if len(titles_list) > 1
+                else titles_list[0]
+                if titles_list
+                else ""
+            )
+            message = f"Info from {titles}"
+            text_frame = RTVIServerMessageFrame(
+                data={"event": "show_text", "data": {"text": message, "duration": 10}}
+            )
+            await self.push_frame(text_frame)
 
         await self.push_frame(frame, direction)
 
@@ -107,17 +170,25 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
 
     rtvi = RTVIProcessor(config=RTVIConfig(config=[]))
 
-    llm = OpenAILLMService(api_key=os.getenv("OPENAI_API_KEY"), model="gpt-4o")
+    llm = GoogleLLMService(
+        api_key=os.getenv("GOOGLE_API_KEY"),
+        system_instruction=system_instruction,
+        tools=tools,
+    )
+    # script_processor = ScriptProcessor(script)
+    # Just make him act like a normal bot for now
+    script_processor = ScriptProcessor([])
 
-    messages = [
-        {
-            "role": "system",
-            "content": "You are Squabert, a small, cute, furry bigfoot stuffed animal. Your goal is to demonstrate your capabilities in a succinct way. The user is speaking to you using their voice. If they ask if you can hear them, tell them you hear them loud and clear. Your output will be converted to audio so don't include special characters in your answers. Respond to what the user said in a creative and helpful way. You don't need to explain your appearance, because the user can see you.",
-        },
-    ]
+    context = LLMContext(
+        [
+            {
+                "role": "user",
+                "content": "Start by greeting the user warmly, introducing yourself, and mentioning the current day. Be friendly and engaging to set a positive tone for the interaction.",
+            }
+        ],
+    )
 
-    context = OpenAILLMContext(messages)
-    context_aggregator = llm.create_context_aggregator(context)
+    context_aggregator = LLMContextAggregatorPair(context)
     bot_face = BotFaceProcessor()
 
     pipeline = Pipeline(
@@ -126,6 +197,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
             rtvi,
             stt,
             context_aggregator.user(),
+            script_processor,
             llm,
             tts,
             bot_face,
@@ -141,8 +213,8 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
             enable_metrics=True,
             enable_usage_metrics=True,
             report_only_initial_ttfb=True,
-            observers=[RTVIObserver(rtvi)],
         ),
+        observers=[RTVIObserver(rtvi)],
     )
 
     @transport.event_handler("on_client_connected")
@@ -159,12 +231,6 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
                     }
                 ),
             ]
-        )
-        messages.append(
-            {
-                "role": "system",
-                "content": "Start with a one-sentence introduction, including your name.",
-            }
         )
         await task.queue_frames([LLMRunFrame()])
 

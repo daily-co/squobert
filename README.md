@@ -13,7 +13,7 @@ cd bot
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-LOCAL_RUN=1 python bot.py
+python bot.py -t daily
 ```
 
 To deploy it to Pipecat Cloud, edit `bot/build.sh` and `bot/pcc-deploy.toml` and run:
@@ -23,6 +23,8 @@ cd bot
 ./build.sh
 pcc deploy
 ```
+
+There's also a GitHub Action in this repo to automatically build and deploy the Pipecat Cloud bot on pushes to `main`.
 
 ## Running the client UI
 
