@@ -20,6 +20,7 @@ from pipecat.frames.frames import (
     LLMFullResponseEndFrame,
     LLMFullResponseStartFrame,
     LLMTextFrame,
+    LLMMessagesAppendFrame,
     LLMContextFrame,
     LLMRunFrame,
     UserStartedSpeakingFrame,
@@ -271,7 +272,19 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
                 ),
             ]
         )
-        await task.queue_frames([LLMRunFrame()])
+        await task.queue_frames(
+            [
+                LLMMessagesAppendFrame(
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": f"Greet the user. Say 'hello?' or another typical, short phone greeting (with 90's style). Wait for the player to respond.",
+                        }
+                    ],
+                    run_llm=True,
+                )
+            ]
+        )
 
     @transport.event_handler("on_client_disconnected")
     async def on_participant_left(transport, client):
@@ -286,7 +299,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
 
 async def bot(runner_args: RunnerArguments):
     """Main bot entry point for the bot starter."""
-
+    logger.debug(f"runner_args: {runner_args}")
     transport_params = {
         "daily": lambda: DailyParams(
             audio_in_enabled=True,

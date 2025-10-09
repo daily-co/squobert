@@ -17,9 +17,9 @@ export function RTVIProvider({ children }: RTVIProviderProps) {
   const onConnect = async () => {
     const response = await fetch(
       // Point your frontend at a Pipecat Cloud deployed bot
-      // "https://api.pipecat.daily.co/v1/public/squobert/start",
+      "https://api.pipecat.daily.co/v1/public/squobert/start",
       // Or test locally with ngrok to deal with HTTPS
-      "https://cb-tunnel-bot.ngrok.app/start",
+      // "https://cb-tunnel-bot.ngrok.app/start",
       {
         method: "POST",
         mode: "cors",
