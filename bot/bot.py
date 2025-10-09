@@ -46,7 +46,23 @@ from pipecat.services.deepgram.stt import DeepgramSTTService
 from pipecat.transports.base_transport import BaseTransport, TransportParams
 from pipecat.transports.daily.transport import DailyParams, DailyTransport
 from pipecat_tail.runner import TailRunner
-from pipecat.services.google.llm import GoogleLLMService, LLMSearchResponseFrame
+from pipecat.services.google.llm import (
+    GoogleLLMService,
+    LLMSearchResponseFrame,
+)
+
+from pipecat.services.gemini_multimodal_live.gemini import (
+    GeminiMultimodalLiveLLMService,
+)
+from pipecat.processors.aggregators.openai_llm_context import OpenAILLMContext
+from pipecat.services.gemini_multimodal_live.gemini import (
+    GeminiMultimodalLiveContext,
+    GeminiMultimodalLiveLLMService,
+    # HttpOptions,
+    InputParams,
+    # ProactivityConfig,
+)
+from google.genai.types import HttpOptions, ProactivityConfig
 
 
 emotions = ["resting", "laughing", "kawaii", "nervous"]
@@ -170,36 +186,59 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
 
     rtvi = RTVIProcessor(config=RTVIConfig(config=[]))
 
-    llm = GoogleLLMService(
+    # llm = GoogleLLMService(
+    #     api_key=os.getenv("GOOGLE_API_KEY"),
+    #     system_instruction=system_instruction,
+    #     tools=tools,
+    # )
+    llm = GeminiMultimodalLiveLLMService(
         api_key=os.getenv("GOOGLE_API_KEY"),
+        model="models/gemini-2.5-flash-native-audio-preview-09-2025",
+        voice_id="Algieba",
         system_instruction=system_instruction,
         tools=tools,
+        input_params=InputParams(
+            enable_affective_dialog=True,
+            proactivity=ProactivityConfig(proactive_audio=True),
+        ),
     )
+
     # script_processor = ScriptProcessor(script)
     # Just make him act like a normal bot for now
-    script_processor = ScriptProcessor([])
+    # script_processor = ScriptProcessor([])
 
-    context = LLMContext(
-        [
-            {
-                "role": "user",
-                "content": "Start by greeting the user warmly, introducing yourself, and mentioning the current day. Be friendly and engaging to set a positive tone for the interaction.",
-            }
-        ],
-    )
+    # context = LLMContext(
+    #     [
+    #         {
+    #             "role": "user",
+    #             "content": "Start by greeting the user warmly, introducing yourself, and mentioning the current day. Be friendly and engaging to set a positive tone for the interaction.",
+    #         }
+    #     ],
+    # )
 
-    context_aggregator = LLMContextAggregatorPair(context)
+    # context_aggregator = llm.create_context_aggregator(context)
+    # Set up the initial context for the conversation
+    messages = [
+        {
+            "role": "system",
+            "content": system_instruction,
+        },
+    ]
+
+    context = GeminiMultimodalLiveContext(messages, tools)
+    context_aggregator = llm.create_context_aggregator(context)
+
     bot_face = BotFaceProcessor()
 
     pipeline = Pipeline(
         [
             transport.input(),
             rtvi,
-            stt,
+            # stt,
             context_aggregator.user(),
-            script_processor,
+            # script_processor,
             llm,
-            tts,
+            # tts,
             bot_face,
             transport.output(),
             context_aggregator.assistant(),
