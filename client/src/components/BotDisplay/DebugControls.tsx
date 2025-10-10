@@ -1,5 +1,5 @@
 import { Expression } from "./types";
-import { useRTVIClient } from "@pipecat-ai/client-react";
+import { usePipecatClient } from "@pipecat-ai/client-react";
 import { useState, useEffect } from "react";
 
 interface DebugControlsProps {
@@ -23,7 +23,7 @@ export function DebugControls({
   onShowText,
   onHideText,
 }: DebugControlsProps) {
-  const client = useRTVIClient();
+  const client = usePipecatClient();
   const [camEnabled, setCamEnabled] = useState(true);
 
   useEffect(() => {

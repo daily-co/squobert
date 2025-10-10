@@ -1,9 +1,9 @@
 import { useCallback, useState, useRef, useEffect } from "react";
 import {
   useRTVIClientEvent,
-  useRTVIClientMediaTrack,
-  useRTVIClient,
-  useRTVIClientTransportState,
+  usePipecatClientMediaTrack,
+  usePipecatClient,
+  usePipecatClientTransportState,
 } from "@pipecat-ai/client-react";
 import { RTVIEvent } from "@pipecat-ai/client-js";
 import { useBotExpression } from "../../providers/BotExpressionProvider";
@@ -19,7 +19,7 @@ import { VideoDisplay } from "../VideoDisplay";
 export function BotDisplay() {
   const { expression, setExpression } = useBotExpression();
   const [talking, setTalking] = useState(false);
-  const transportState = useRTVIClientTransportState();
+  const transportState = usePipecatClientTransportState();
 
   const faceRef = useRef<HTMLDivElement>(null);
   const [isBlinking, setIsBlinking] = useState(false);
@@ -27,8 +27,8 @@ export function BotDisplay() {
 
   const [isLoud, setIsLoud] = useState(false);
 
-  const botAudioTrack = useRTVIClientMediaTrack("audio", "bot");
-  const client = useRTVIClient();
+  const botAudioTrack = usePipecatClientMediaTrack("audio", "bot");
+  const client = usePipecatClient();
 
   const [showingText, setShowingText] = useState(false);
   const [displayText, setDisplayText] = useState("");

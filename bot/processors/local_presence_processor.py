@@ -17,7 +17,8 @@ from pipecat.frames.frames import (
     StartFrame,
     EndFrame,
     CancelFrame,
-    LLMMessagesUpdateFrame
+    LLMMessagesUpdateFrame,
+    SystemFrame
 )
 from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
 

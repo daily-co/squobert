@@ -82,19 +82,15 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     # Just make him act like a normal bot for now
     script_processor = ScriptProcessor([])
 
+    messages = [ { "role": "user", "content": "Start by greeting the user warmly, introducing yourself, and mentioning the current day. Be friendly and engaging to set a positive tone for the interaction.", } ]
     context = LLMContext(
-        [
-            {
-                "role": "user",
-                "content": "Start by greeting the user warmly, introducing yourself, and mentioning the current day. Be friendly and engaging to set a positive tone for the interaction.",
-            }
-        ],
+        messages
     )
 
     context_aggregator = LLMContextAggregatorPair(context)
     bot_face = BotFaceProcessor()
     remote_presence = RemotePresenceProcessor()
-    local_presence = LocalPresenceProcessor()
+    local_presence = LocalPresenceProcessor(messages=messages)
 
     pipeline = Pipeline(
         [

@@ -3,7 +3,11 @@
     "allow": [
       "Bash(python -c \"from pipecat.frames.frames import UserImageRawFrame; import inspect; print(inspect.getsource(UserImageRawFrame))\")",
       "Bash(python:*)",
-      "Read(//home/chad/Code/squobert/client/**)"
+      "Read(//home/chad/Code/squobert/client/**)",
+      "WebFetch(domain:docs.pipecat.ai)",
+      "Bash(npm run build:*)",
+      "Bash(find:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

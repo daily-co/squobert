@@ -1,7 +1,7 @@
-import { RTVIClientAudio } from "@pipecat-ai/client-react";
+import { PipecatClientAudio } from "@pipecat-ai/client-react";
 
 // No props needed anymore
 
 export function AudioComponent() {
-  return <RTVIClientAudio />;
+  return <PipecatClientAudio />;
 }

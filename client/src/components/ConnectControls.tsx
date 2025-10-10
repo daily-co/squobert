@@ -1,13 +1,13 @@
 import { useState } from "react";
 import {
-  useRTVIClient,
-  useRTVIClientTransportState,
+  usePipecatClient,
+  usePipecatClientTransportState,
 } from "@pipecat-ai/client-react";
 import { useDebugScreen } from "../providers/DebugScreenProvider";
 
 export function ConnectControls() {
-  const client = useRTVIClient();
-  const transportState = useRTVIClientTransportState();
+  const client = usePipecatClient();
+  const transportState = usePipecatClientTransportState();
   const [isConnecting, setIsConnecting] = useState(false);
   const { setShowDebugScreen } = useDebugScreen();
 

@@ -1,10 +1,10 @@
-import { useRTVIClient } from "@pipecat-ai/client-react";
+import { usePipecatClient } from "@pipecat-ai/client-react";
 import { useState, useEffect } from "react";
 import { useBotExpression } from "../providers/BotExpressionProvider";
 import { useMicSettings } from "../providers/MicSettingsProvider";
 
 export function DisconnectControls() {
-  const client = useRTVIClient();
+  const client = usePipecatClient();
   const { startWithMicEnabled } = useMicSettings();
   const [micEnabled, setMicEnabled] = useState(false);
   const { setExpression } = useBotExpression();
