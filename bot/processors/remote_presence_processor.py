@@ -20,9 +20,9 @@ from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
 from .presence_frame import PresenceFrame
 
 
-class PresenceProcessor(FrameProcessor):
+class RemotePresenceProcessor(FrameProcessor):
     """
-    Monitors UserImageRawFrame objects for face detection.
+    Monitors InputImageRawFrame objects from remote participants for face detection.
     Checks for faces every second and emits a PresenceFrame when the count changes.
     """
 
@@ -41,7 +41,7 @@ class PresenceProcessor(FrameProcessor):
             logger.error("Failed to load face detection cascade")
             raise RuntimeError("Could not load face detection cascade")
 
-        logger.info("PresenceProcessor initialized with face detection")
+        logger.info("RemotePresenceProcessor initialized with face detection")
 
     def _detect_faces(self, frame: InputImageRawFrame) -> int:
         """

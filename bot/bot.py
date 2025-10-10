@@ -35,7 +35,7 @@ from pipecat.transports.daily.transport import DailyParams, DailyTransport
 from pipecat_tail.runner import TailRunner
 from pipecat.services.google.llm import GoogleLLMService
 
-from processors import ScriptProcessor, BotFaceProcessor, PresenceProcessor
+from processors import ScriptProcessor, BotFaceProcessor, RemotePresenceProcessor
 
 
 # Load environment variables
@@ -93,12 +93,12 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
 
     context_aggregator = LLMContextAggregatorPair(context)
     bot_face = BotFaceProcessor()
-    presence = PresenceProcessor()
+    remote_presence = RemotePresenceProcessor()
 
     pipeline = Pipeline(
         [
             transport.input(),
-            # presence,
+            # remote_presence,
             rtvi,
             stt,
             context_aggregator.user(),
