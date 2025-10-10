@@ -8,6 +8,7 @@ import asyncio
 import time
 import cv2
 import numpy as np
+import copy
 
 from loguru import logger
 
@@ -16,31 +17,52 @@ from pipecat.frames.frames import (
     StartFrame,
     EndFrame,
     CancelFrame,
+    LLMMessagesUpdateFrame
 )
 from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
 
 from .presence_frame import PresenceFrame
+from .session_frames import StartSessionFrame, StopSessionFrame
 
 
 class LocalPresenceProcessor(FrameProcessor):
     """
     Monitors local webcam for face detection.
     Runs its own camera capture loop and emits a PresenceFrame when the face count changes.
+    Emits StartSessionFrame after sustained presence (5s) and StopSessionFrame after sustained absence (10s).
     Starts capturing on StartFrame, stops on EndFrame or CancelFrame.
     """
 
-    def __init__(self, camera_index: int = 0, check_interval: float = 1.0):
+    def __init__(
+        self,
+        messages,
+        camera_index: int = 0,
+        check_interval: float = 1.0,
+        start_session_delay: float = 5.0,
+        stop_session_delay: float = 20.0,
+    ):
         """
         Initialize the local presence processor.
 
         Args:
             camera_index: Camera device index (default: 0)
             check_interval: Time in seconds between face detection checks (default: 1.0)
+            start_session_delay: Seconds of sustained presence before starting session (default: 5.0)
+            stop_session_delay: Seconds of sustained absence before stopping session (default: 10.0)
         """
         super().__init__()
+        # Save messages for when we need to reset the context
+        self._messages = copy.deepcopy(messages)
         self._camera_index = camera_index
         self._check_interval = check_interval
+        self._start_session_delay = start_session_delay
+        self._stop_session_delay = stop_session_delay
         self._last_face_count = 0
+
+        # Session tracking
+        self._session_active = False
+        self._presence_start_time = None  # When faces were first detected
+        self._absence_start_time = None   # When faces were last seen
 
         # Camera and task management
         self._capture = None
@@ -56,7 +78,11 @@ class LocalPresenceProcessor(FrameProcessor):
             logger.error("Failed to load face detection cascade")
             raise RuntimeError("Could not load face detection cascade")
 
-        logger.info(f"LocalPresenceProcessor initialized (camera: {camera_index}, interval: {check_interval}s)")
+        logger.info(
+            f"LocalPresenceProcessor initialized "
+            f"(camera: {camera_index}, interval: {check_interval}s, "
+            f"start_delay: {start_session_delay}s, stop_delay: {stop_session_delay}s)"
+        )
 
     def _detect_faces(self, frame: np.ndarray) -> int:
         """
@@ -131,6 +157,40 @@ class LocalPresenceProcessor(FrameProcessor):
                         presence_frame = PresenceFrame(face_count=face_count)
                         await self.push_frame(presence_frame)
 
+                    # Track presence/absence for session management
+                    has_faces = face_count > 0
+
+                    if has_faces:
+                        # Reset absence timer
+                        self._absence_start_time = None
+
+                        # Start tracking presence if not already
+                        if self._presence_start_time is None:
+                            self._presence_start_time = current_time
+                            logger.debug("Started tracking presence")
+
+                        # Check if we should start a session
+                        if not self._session_active:
+                            presence_duration = current_time - self._presence_start_time
+                            if presence_duration >= self._start_session_delay:
+                                logger.info(f"Starting session after {presence_duration:.1f}s of presence")
+                                await self._start_session()
+                    else:
+                        # Reset presence timer
+                        self._presence_start_time = None
+
+                        # Start tracking absence if session is active
+                        if self._session_active:
+                            if self._absence_start_time is None:
+                                self._absence_start_time = current_time
+                                logger.debug("Started tracking absence")
+
+                            # Check if we should stop the session
+                            absence_duration = current_time - self._absence_start_time
+                            if absence_duration >= self._stop_session_delay:
+                                logger.info(f"Stopping session after {absence_duration:.1f}s of absence")
+                                self._absence_start_time = None
+                                await self._stop_session()
                 # Small sleep to prevent CPU spinning
                 await asyncio.sleep(0.01)
 
@@ -173,7 +233,21 @@ class LocalPresenceProcessor(FrameProcessor):
             self._capture.release()
             self._capture = None
 
+        # Reset session state
+        self._session_active = False
+        self._presence_start_time = None
+        self._absence_start_time = None
+
         logger.info("Camera capture stopped")
+
+    async def _start_session(self):
+        self._session_active = True
+        await self.push_frame(StartSessionFrame())
+
+    async def _stop_session(self):
+        self._session_active = False
+        await self.push_frame(StopSessionFrame())
+        await self.push_frame(LLMMessagesUpdateFrame(messages=self._messages))
 
     async def process_frame(self, frame: Frame, direction: FrameDirection):
         await super().process_frame(frame, direction)
@@ -188,8 +262,14 @@ class LocalPresenceProcessor(FrameProcessor):
             logger.info(f"Received {frame.__class__.__name__}, stopping camera capture")
             await self._stop_capture()
 
-        # Always push the original frame through
-        await self.push_frame(frame, direction)
+        # Always push system frames
+        if isinstance(frame, SystemFrame):
+            await self.push_frame(frame, direction)
+
+        else:
+            # Only push other frames if we're in an active session
+            if self._session_active:
+                await self.push_frame(frame, direction)
 
     async def cleanup(self):
         """Cleanup method called when processor is being destroyed."""

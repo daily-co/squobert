@@ -18,9 +18,10 @@ from pipecat.frames.frames import (
 from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
 from pipecat.processors.frameworks.rtvi import RTVIServerMessageFrame
 from pipecat.services.google.llm import LLMSearchResponseFrame
+from .session_frames import StartSessionFrame, StopSessionFrame
 
 
-emotions = ["resting", "laughing", "kawaii", "nervous"]
+emotions = ["resting", "laughing", "kawaii", "nervous", "sleeping"]
 
 
 # TODO: This could probably be an observer?
@@ -46,7 +47,7 @@ class BotFaceProcessor(FrameProcessor):
             emotion_frame = RTVIServerMessageFrame(
                 data={
                     "event": "expression_change",
-                    "data": {"expression": random.choice(emotions)},
+                    "data": {"expression": "sleeping"},
                 }  # random.choice(emotions)
             )
             await self.push_frame(emotion_frame)
@@ -58,6 +59,16 @@ class BotFaceProcessor(FrameProcessor):
             #     }
             # )
             # await self.push_frame(text_frame)
+        elif isinstance(frame, StartSessionFrame):
+            pass
+        elif isinstance(frame, StopSessionFrame):
+            emotion_frame = RTVIServerMessageFrame(
+                data={
+                    "event": "expression_change",
+                    "data": {"expression": random.choice(emotions)},
+                }  # random.choice(emotions)
+            )
+            await self.push_frame(emotion_frame)
         elif isinstance(frame, LLMSearchResponseFrame):
             titles_list = list(
                 dict.fromkeys(origin["site_title"] for origin in frame.origins)
