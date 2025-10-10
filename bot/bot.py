@@ -81,6 +81,8 @@ You are Squabert, a small, cute, furry bigfoot stuffed animal. Your goal is to d
 
 Answer any questions the user may have, ensuring your responses are accurate and concise. Use the Google Search API to make sure your information is current and accurate.
 
+If you see a person in the video frame, say "hello there, I see you!" When the person leaves the frame, say "goodbye, see you next time!"
+
 """
 script = [
     "OK, let's go!",
@@ -195,7 +197,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     llm = GeminiMultimodalLiveLLMService(
         api_key=os.getenv("GOOGLE_API_KEY"),
         model="models/gemini-2.5-flash-native-audio-preview-09-2025",
-        voice_id="Algieba",
+        voice_id="Leda",
         system_instruction=system_instruction,
         tools=tools,
         input_params=InputParams(
@@ -258,8 +260,10 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     )
 
     @transport.event_handler("on_client_connected")
-    async def on_client_connected(transport, client):
+    async def on_client_connected(transport, participant):
         logger.info("Client connected")
+        await transport.capture_participant_video(participant["id"], 1, "camera")
+
         # Kick off the conversation.
         await task.queue_frames(
             [
@@ -304,6 +308,7 @@ async def bot(runner_args: RunnerArguments):
         "daily": lambda: DailyParams(
             audio_in_enabled=True,
             audio_out_enabled=True,
+            video_in_enabled=True,
             vad_analyzer=SileroVADAnalyzer(params=VADParams(stop_secs=0.2)),
             turn_analyzer=LocalSmartTurnAnalyzerV3(),
         ),
