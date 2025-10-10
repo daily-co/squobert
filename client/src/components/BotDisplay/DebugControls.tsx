@@ -59,6 +59,7 @@ export function DebugControls({
           "laughing",
           "nervous",
           "kawaii",
+          "sleeping",
         ].map((expr) => (
           <button
             key={expr}

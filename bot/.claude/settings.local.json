@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(python -c \"from pipecat.frames.frames import UserImageRawFrame; import inspect; print(inspect.getsource(UserImageRawFrame))\")",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Read(//home/chad/Code/squobert/client/**)"
     ],
     "deny": [],
     "ask": []

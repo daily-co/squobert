@@ -92,7 +92,8 @@ export function BotDisplay() {
   }, [isLoud]);
 
   useEffect(() => {
-    if (expression !== "laughing") {
+    // Don't blink when laughing or sleeping
+    if (expression !== "laughing" && expression !== "sleeping") {
       const blink = () => {
         console.log("blink callback");
         setIsBlinking(true);

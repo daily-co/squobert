@@ -1,1 +1,1 @@
-export type Expression = "resting" | "listening" | "thinking" | "laughing" | "kawaii" | "nervous"; 
+export type Expression = "resting" | "listening" | "thinking" | "laughing" | "kawaii" | "nervous" | "sleeping"; 

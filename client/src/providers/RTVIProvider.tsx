@@ -2,13 +2,15 @@ import { type PropsWithChildren, useState } from "react";
 import { RTVIClient, RTVIClientParams } from "@pipecat-ai/client-js";
 import { RTVIClientProvider } from "@pipecat-ai/client-react";
 import { DailyTransport } from "@pipecat-ai/daily-transport";
+import { SmallWebRTCTransport } from "@pipecat-ai/small-webrtc-transport";
 import { useMicSettings } from "./MicSettingsProvider";
 
 export type ProviderType = "webrtc";
 
 interface RTVIProviderProps extends PropsWithChildren {}
 
-const transport = new DailyTransport();
+// const transport = new DailyTransport();
+const transport = new SmallWebRTCTransport();
 
 export function RTVIProvider({ children }: RTVIProviderProps) {
   const [participantId, setParticipantId] = useState("");
@@ -17,9 +19,10 @@ export function RTVIProvider({ children }: RTVIProviderProps) {
   const onConnect = async () => {
     const response = await fetch(
       // Point your frontend at a Pipecat Cloud deployed bot
-      "https://api.pipecat.daily.co/v1/public/squobert/start",
+      // "https://api.pipecat.daily.co/v1/public/squobert/start",
       // Or test locally with ngrok to deal with HTTPS
       // "https://your-tunnel.ngrok.app/start",
+      "http://localhost:7860/start",
       {
         method: "POST",
         mode: "cors",

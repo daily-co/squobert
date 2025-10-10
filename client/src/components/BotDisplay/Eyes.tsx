@@ -26,6 +26,32 @@ export function Eyes({ expression, isBlinking }: EyesProps) {
               strokeLinecap="round"
             />
           </>
+        ) : expression === "sleeping" ? (
+          <>
+            {/* Closed eyes for sleeping */}
+            <path
+              className="sleeping-eye-left"
+              d="M 90 180 Q 110 175, 130 180"
+              fill="none"
+              stroke="#000"
+              strokeWidth="8"
+              strokeLinecap="round"
+            />
+            <path
+              className="sleeping-eye-right"
+              d="M 470 180 Q 490 175, 510 180"
+              fill="none"
+              stroke="#000"
+              strokeWidth="8"
+              strokeLinecap="round"
+            />
+            {/* Add sleeping "zzz" animation */}
+            <g className="zzz">
+              <text x="520" y="120" fontSize="40" fontWeight="bold" fill="#000" opacity="0.7">Z</text>
+              <text x="540" y="90" fontSize="30" fontWeight="bold" fill="#000" opacity="0.5">z</text>
+              <text x="555" y="70" fontSize="20" fontWeight="bold" fill="#000" opacity="0.3">z</text>
+            </g>
+          </>
         ) : (
           <>
             {isBlinking ? (
