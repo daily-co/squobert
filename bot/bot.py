@@ -35,7 +35,7 @@ from pipecat.transports.daily.transport import DailyParams, DailyTransport
 from pipecat_tail.runner import TailRunner
 from pipecat.services.google.llm import GoogleLLMService
 
-from processors import ScriptProcessor, BotFaceProcessor, RemotePresenceProcessor
+from processors import ScriptProcessor, BotFaceProcessor, RemotePresenceProcessor, LocalPresenceProcessor
 
 
 # Load environment variables
@@ -94,11 +94,13 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     context_aggregator = LLMContextAggregatorPair(context)
     bot_face = BotFaceProcessor()
     remote_presence = RemotePresenceProcessor()
+    local_presence = LocalPresenceProcessor()
 
     pipeline = Pipeline(
         [
             transport.input(),
             # remote_presence,
+            local_presence,
             rtvi,
             stt,
             context_aggregator.user(),
@@ -126,7 +128,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     async def on_client_connected(transport, client):
         logger.info("Client connected")
         # TODO-CB: Send camera to transport
-        await maybe_capture_participant_camera(transport, client)
+        # await maybe_capture_participant_camera(transport, client)
         # Kick off the conversation.
         await task.queue_frames(
             [
