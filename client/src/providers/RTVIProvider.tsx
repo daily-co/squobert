@@ -20,6 +20,8 @@ export function RTVIProvider({ children }: RTVIProviderProps) {
       "https://api.pipecat.daily.co/v1/public/squobert/start",
       // Or test locally with ngrok to deal with HTTPS
       // "https://your-tunnel.ngrok.app/start",
+      // You can also try connecting directly to your local bot
+      // "http://localhost:7860/start"
       {
         method: "POST",
         mode: "cors",
