@@ -18,7 +18,8 @@ from pipecat.frames.frames import (
     EndFrame,
     CancelFrame,
     LLMMessagesUpdateFrame,
-    SystemFrame
+    SystemFrame,
+    LLMRunFrame
 )
 from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
 
@@ -40,7 +41,7 @@ class LocalPresenceProcessor(FrameProcessor):
         camera_index: int = 0,
         check_interval: float = 1.0,
         start_session_delay: float = 5.0,
-        stop_session_delay: float = 20.0,
+        stop_session_delay: float = 5.0,
     ):
         """
         Initialize the local presence processor.
@@ -49,7 +50,7 @@ class LocalPresenceProcessor(FrameProcessor):
             camera_index: Camera device index (default: 0)
             check_interval: Time in seconds between face detection checks (default: 1.0)
             start_session_delay: Seconds of sustained presence before starting session (default: 5.0)
-            stop_session_delay: Seconds of sustained absence before stopping session (default: 10.0)
+            stop_session_delay: Seconds of sustained absence before stopping session (default: 5.0)
         """
         super().__init__()
         # Save messages for when we need to reset the context
@@ -61,7 +62,7 @@ class LocalPresenceProcessor(FrameProcessor):
         self._last_face_count = 0
 
         # Session tracking
-        self._session_active = False
+        self._session_active = True
         self._presence_start_time = None  # When faces were first detected
         self._absence_start_time = None   # When faces were last seen
 
@@ -242,10 +243,13 @@ class LocalPresenceProcessor(FrameProcessor):
         logger.info("Camera capture stopped")
 
     async def _start_session(self):
+        logger.info("Starting session")
         self._session_active = True
         await self.push_frame(StartSessionFrame())
+        await self.push_frame(LLMRunFrame())
 
     async def _stop_session(self):
+        logger.info("Stopping session")
         self._session_active = False
         await self.push_frame(StopSessionFrame())
         await self.push_frame(LLMMessagesUpdateFrame(messages=self._messages))

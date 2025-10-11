@@ -21,7 +21,8 @@ from pipecat.services.google.llm import LLMSearchResponseFrame
 from .session_frames import StartSessionFrame, StopSessionFrame
 
 
-emotions = ["resting", "laughing", "kawaii", "nervous", "sleeping"]
+# also "sleeping" but we don't want that one randomly
+emotions = ["resting", "laughing", "kawaii", "nervous"]
 
 
 # TODO: This could probably be an observer?
@@ -47,7 +48,7 @@ class BotFaceProcessor(FrameProcessor):
             emotion_frame = RTVIServerMessageFrame(
                 data={
                     "event": "expression_change",
-                    "data": {"expression": "sleeping"},
+                    "data": {"expression": random.choice(emotions)},
                 }  # random.choice(emotions)
             )
             await self.push_frame(emotion_frame)
@@ -60,12 +61,18 @@ class BotFaceProcessor(FrameProcessor):
             # )
             # await self.push_frame(text_frame)
         elif isinstance(frame, StartSessionFrame):
-            pass
+            emotion_frame = RTVIServerMessageFrame(
+                data={
+                    "event": "expression_change",
+                    "data": {"expression": "kawaii"},
+                }  # random.choice(emotions)
+            )
+            await self.push_frame(emotion_frame)
         elif isinstance(frame, StopSessionFrame):
             emotion_frame = RTVIServerMessageFrame(
                 data={
                     "event": "expression_change",
-                    "data": {"expression": random.choice(emotions)},
+                    "data": {"expression": "sleeping"},
                 }  # random.choice(emotions)
             )
             await self.push_frame(emotion_frame)

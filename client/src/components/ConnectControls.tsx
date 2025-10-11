@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   usePipecatClient,
   usePipecatClientTransportState,
@@ -13,6 +13,10 @@ export function ConnectControls() {
 
   // Determine if connected
   const isConnected = ["connected", "ready"].includes(transportState);
+
+  useEffect(() => {
+    console.log("pipecat client transport state:", transportState);
+  }, [transportState]);
 
   const handleConnect = async () => {
     setIsConnecting(true);
@@ -48,10 +52,7 @@ export function ConnectControls() {
           >
             {isConnecting ? "Connecting..." : "Connect"}
           </button>
-          <button 
-            onClick={handleShowDebugScreen}
-            className="info-button"
-          >
+          <button onClick={handleShowDebugScreen} className="info-button">
             i
           </button>
         </div>

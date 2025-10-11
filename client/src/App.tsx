@@ -12,14 +12,19 @@ import { MicSettingsProvider } from "./providers/MicSettingsProvider";
 
 function AppContent() {
   // Use the transport state
-  const rtviTransportState = usePipecatClientTransportState();
-  
+  const pipecatClientTransportState = usePipecatClientTransportState();
+
   // Determine connection status
-  const isConnected = ["connected", "ready", "joining-meeting"].includes(rtviTransportState);
-    
+  const isConnected = ["connected", "ready", "joining-meeting"].includes(
+    pipecatClientTransportState
+  );
+
   useEffect(() => {
-    console.log("RTVI transportState changed:", rtviTransportState);
-  }, [rtviTransportState]);
+    console.log(
+      "pipecat client transportState changed:",
+      pipecatClientTransportState
+    );
+  }, [pipecatClientTransportState]);
 
   return (
     <div className="app">
