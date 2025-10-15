@@ -96,7 +96,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
         [
             transport.input(),
             # remote_presence,
-            # local_presence,
+            local_presence,
             rtvi,
             stt,
             context_aggregator.user(),
