@@ -241,11 +241,12 @@ class SquobertOS(App):
     CSS = """
     Screen {
         align: center middle;
-        padding: 3 4;
+        padding: 4 10;
     }
 
     #main_container {
-        width: 80;
+        width: 100;
+        max-width: 100;
         height: auto;
         border: solid $primary;
         padding: 1 2;
