@@ -35,11 +35,11 @@ EOF
 # Add auto-start to .bashrc for TTY1 only
 echo "🚀 Configuring auto-start in .bashrc..."
 if ! grep -q "# SquobertOS auto-start" ~/.bashrc; then
-    cat >> ~/.bashrc <<'EOF'
+    cat >> ~/.bashrc <<EOF
 
 # SquobertOS auto-start
 if [ "\$(tty)" = "/dev/tty1" ]; then
-    cd /home/$USER/Code/squobert/squobertos
+    cd $HOME/Code/squobert/squobertos
     uv run python squobertos.py
 fi
 EOF

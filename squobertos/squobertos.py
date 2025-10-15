@@ -34,9 +34,9 @@ class MainMenuScreen(Screen):
                 Button("3. System Settings", id="settings_btn"),
                 Button("4. Exit to Shell", id="shell_btn"),
                 Button("Q. Quit", id="quit_btn", variant="error"),
-                id="menu_buttons"
+                id="menu_buttons",
             ),
-            id="main_container"
+            id="main_container",
         )
         yield Footer()
 
@@ -91,12 +91,12 @@ class WiFiScreen(Screen):
                     Button("Scan Networks", id="scan_btn", variant="primary"),
                     Button("Connect", id="connect_btn", variant="success"),
                     Button("Back", id="back_btn"),
-                    id="wifi_buttons"
+                    id="wifi_buttons",
                 ),
                 Static("", id="status"),
-                id="wifi_container"
+                id="wifi_container",
             ),
-            id="main_container"
+            id="main_container",
         )
         yield Footer()
 
@@ -124,14 +124,14 @@ class WiFiScreen(Screen):
                 ["nmcli", "-t", "-f", "SSID,SIGNAL,SECURITY", "device", "wifi", "list"],
                 capture_output=True,
                 text=True,
-                timeout=10
+                timeout=10,
             )
 
             if result.returncode == 0:
-                lines = result.stdout.strip().split('\n')
+                lines = result.stdout.strip().split("\n")
                 formatted = []
                 for line in lines[:10]:  # Show top 10 networks
-                    parts = line.split(':')
+                    parts = line.split(":")
                     if len(parts) >= 3 and parts[0]:
                         ssid = parts[0]
                         signal = parts[1]
@@ -139,7 +139,7 @@ class WiFiScreen(Screen):
                         formatted.append(f"  {ssid:30s} {signal:>3s}% {security}")
 
                 if formatted:
-                    networks_widget.update('\n'.join(formatted))
+                    networks_widget.update("\n".join(formatted))
                 else:
                     networks_widget.update("No networks found")
             else:
@@ -169,14 +169,14 @@ class WiFiScreen(Screen):
                     ["nmcli", "device", "wifi", "connect", ssid, "password", password],
                     capture_output=True,
                     text=True,
-                    timeout=30
+                    timeout=30,
                 )
             else:
                 result = subprocess.run(
                     ["nmcli", "device", "wifi", "connect", ssid],
                     capture_output=True,
                     text=True,
-                    timeout=30
+                    timeout=30,
                 )
 
             if result.returncode == 0:
@@ -207,12 +207,12 @@ class SettingsScreen(Screen):
                 Horizontal(
                     Button("Save", id="save_btn", variant="success"),
                     Button("Back", id="back_btn"),
-                    id="settings_buttons"
+                    id="settings_buttons",
                 ),
                 Static("", id="status"),
-                id="settings_container"
+                id="settings_container",
             ),
-            id="main_container"
+            id="main_container",
         )
         yield Footer()
 
@@ -241,6 +241,7 @@ class SquobertOS(App):
     CSS = """
     Screen {
         align: center middle;
+        padding: 3 4;
     }
 
     #main_container {
@@ -323,15 +324,17 @@ def launch_ai_mode():
     try:
         # Launch Chromium in fullscreen kiosk mode
         # This will start its own X session if needed
-        subprocess.run([
-            "chromium-browser",
-            "--kiosk",
-            "--noerrdialogs",
-            "--disable-infobars",
-            "--no-first-run",
-            "--check-for-update-interval=31536000",
-            "http://localhost:3000"  # TODO: Make this configurable
-        ])
+        subprocess.run(
+            [
+                "chromium-browser",
+                "--kiosk",
+                "--noerrdialogs",
+                "--disable-infobars",
+                "--no-first-run",
+                "--check-for-update-interval=31536000",
+                "http://localhost:3000",  # TODO: Make this configurable
+            ]
+        )
     except Exception as e:
         print(f"Error launching AI mode: {e}")
         input("Press Enter to continue...")
