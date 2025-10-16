@@ -86,7 +86,13 @@ class MainMenuScreen(Screen):
         yield Container(
             LayeredDisplay(id="squobert_face"),
             Horizontal(
-                Button("1. WiFi", id="wifi_btn", variant="primary"),
+                Button(
+                    "1. WiFi",
+                    id="wifi_btn",
+                    variant="success",
+                    compact=False,
+                    flat=False,
+                ),
                 Button("2. Launch AI", id="ai_btn", variant="success"),
                 Button("3. Settings", id="settings_btn"),
                 id="top_buttons",
@@ -341,14 +347,13 @@ class SquobertOS(App):
 
     #top_buttons Button, #bottom_buttons Button {
         width: 1fr;
-        height: 1;
+        height: 5;
         min-height: 1;
         margin: 0 1;
-        background: $panel 70%;
     }
 
     #wifi_container, #settings_container {
-        width: 100%;
+        width: 80%;
         height: auto;
     }
 
