@@ -346,6 +346,9 @@ def main():
     app = SquobertOS()
     result = app.run()
 
+    # Clear screen after TUI exits
+    subprocess.run(["clear"])
+
     # Handle exit actions
     if result == "launch_ai":
         launch_ai_mode()
