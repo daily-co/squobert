@@ -140,13 +140,19 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
                         "data": {"expression": "resting"},
                     }
                 ),
+                RTVIServerMessageFrame(
+                    data={
+                        "event": "show_text",
+                        "data": {"text": "test text", "duration": 30},
+                    }
+                ),
             ]
         )
-        await task.queue_frames([LLMRunFrame()])
 
     @transport.event_handler("on_client_connected")
     async def on_client_connected(transport, client):
         logger.info("!!! Client connected")
+        await task.queue_frames([LLMRunFrame()])
 
     @transport.event_handler("on_client_disconnected")
     async def on_participant_left(transport, client):

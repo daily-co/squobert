@@ -32,9 +32,10 @@
   overflow: hidden;
   transition: transform 0.24s ease, filter 0.24s ease;
 }
+.face svg {margin: 10%;}
 
 .face.talking {
-  transform: scale(1.015);
+  transform: scale(1.05);
 }
 
 .face.showing-text {
@@ -60,6 +61,22 @@
 
 .face.talking .mouth-shape path {
   transition: none;
+  animation: talk 0.2s infinite alternate steps(2);
+}
+
+@keyframes talk {
+  from {
+    d: path("M 250 210 Q 300 240, 350 210");
+    fill: none;
+    stroke: #000;
+    stroke-width: 8;
+    stroke-linecap: round;
+  }
+  to {
+    d: path("M 250 194 A 50 50 0 0 0 350 194");
+    fill: #000;
+    stroke: none;
+  }
 }
 
 .face.listening .eyebrows {
@@ -70,7 +87,7 @@
 .face-container .thinking-bubble {
   position: absolute;
   top: 18%;
-  right: clamp(-6rem, -6vw, -2rem);
+  right: 10%;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -89,7 +106,7 @@
 
 .face-container .text-content {
   font-family: 'Fredoka', 'Comic Sans MS', 'Marker Felt', cursive;
-  font-size: 20px;
+  font-size: 30px;
   font-weight: 600;
   line-height: 1.4;
   color: #333;
@@ -177,6 +194,10 @@
 
 .control-float button {
   border-radius: 9999px;
+}
+
+.control-float.connected button {
+  opacity: 0.6;
 }
 
 

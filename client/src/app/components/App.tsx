@@ -41,20 +41,22 @@ export const App = ({
           <BotFacePanel />
           <div className={`control-float ${isConnected ? "connected" : ""}`}>
             <ConnectButton
-              size="lg"
+              size="xl"
               onConnect={handleConnect}
               onDisconnect={handleDisconnect}
             />
-            <button
-              type="button"
-              className="info-button"
-              onClick={() => setShowSettings(true)}
-              aria-haspopup="dialog"
-              aria-expanded={showSettings}
-              aria-label="Show connection settings"
-            >
-              i
-            </button>
+            {!isConnected && (
+              <button
+                type="button"
+                className="info-button"
+                onClick={() => setShowSettings(true)}
+                aria-haspopup="dialog"
+                aria-expanded={showSettings}
+                aria-label="Show connection settings"
+              >
+                i
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -96,7 +98,7 @@ export const App = ({
 
               <section className="control-section">
                 <h3>Microphone</h3>
-                <UserAudioControl size="lg" />
+                <UserAudioControl size="xl" />
               </section>
             </div>
           </div>
