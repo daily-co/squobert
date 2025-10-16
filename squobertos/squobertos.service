@@ -1,0 +1,16 @@
+[Unit]
+Description=SquobertOS Configuration TUI
+After=multi-user.target
+
+[Service]
+Type=simple
+User=chad
+TTYPath=/dev/tty1
+StandardInput=tty
+StandardOutput=tty
+ExecStart=/usr/bin/python3 /home/chad/Code/squobert/squobertos/squobertos.py
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
