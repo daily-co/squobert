@@ -14,6 +14,64 @@ from textual.screen import Screen
 from textual.binding import Binding
 
 
+class LayeredDisplay(Static):
+    """Widget to display circuit background with squobert overlay"""
+
+    def render(self) -> str:
+        """Render the layered display with circuit and squobert"""
+        # Load the circuit background from file
+        circuit_file = Path(__file__).parent / "assets/circuit.txt"
+        squobert_file = Path(__file__).parent / "assets/face.txt"
+
+        try:
+            with open(circuit_file, "r", encoding="utf-8") as f:
+                circuit_lines = f.read().splitlines()
+
+            with open(squobert_file, "r", encoding="utf-8") as f:
+                squobert_lines = f.read().splitlines()
+
+            # Ensure both have the same number of lines (35)
+            while len(circuit_lines) < 35:
+                circuit_lines.append(" " * 128)
+            while len(squobert_lines) < 35:
+                squobert_lines.append(" " * 128)
+
+            # Overlay squobert on circuit
+            result_lines = []
+            for i in range(35):
+                circuit_line = circuit_lines[i] if i < len(circuit_lines) else " " * 128
+                squobert_line = (
+                    squobert_lines[i] if i < len(squobert_lines) else " " * 128
+                )
+
+                # Ensure lines are padded to at least 128 characters
+                circuit_line = circuit_line.ljust(128)
+                squobert_line = squobert_line.ljust(128)
+
+                # Overlay: use squobert character if non-space, otherwise use circuit
+                overlay_line = ""
+                max_len = max(len(circuit_line), len(squobert_line))
+                for j in range(max_len):
+                    c_char = circuit_line[j] if j < len(circuit_line) else " "
+                    s_char = squobert_line[j] if j < len(squobert_line) else " "
+
+                    if s_char != " ":
+                        # Light green for squobert
+                        overlay_line += f"[#00ff00]{s_char}[/]"
+                    elif c_char != " ":
+                        # Dark green for circuit
+                        overlay_line += f"[#004900]{c_char}[/]"
+                    else:
+                        overlay_line += " "
+
+                result_lines.append(overlay_line)
+
+            return "\n".join(result_lines)
+
+        except FileNotFoundError as e:
+            return f"File not found: {e}"
+
+
 class MainMenuScreen(Screen):
     """Main menu screen with configuration options"""
 
@@ -26,15 +84,18 @@ class MainMenuScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Header()
         yield Container(
+            LayeredDisplay(id="squobert_face"),
             Static("🤖 SquobertOS", id="title"),
-            Static("Configuration Menu", id="subtitle"),
-            Vertical(
-                Button("1. Configure WiFi", id="wifi_btn", variant="primary"),
-                Button("2. Launch AI Mode", id="ai_btn", variant="success"),
-                Button("3. System Settings", id="settings_btn"),
-                Button("4. Exit to Shell", id="shell_btn"),
+            Horizontal(
+                Button("1. WiFi", id="wifi_btn", variant="primary"),
+                Button("2. Launch AI", id="ai_btn", variant="success"),
+                Button("3. Settings", id="settings_btn"),
+                id="top_buttons",
+            ),
+            Horizontal(
+                Button("4. Shell", id="shell_btn"),
                 Button("Q. Quit", id="quit_btn", variant="error"),
-                id="menu_buttons",
+                id="bottom_buttons",
             ),
             id="main_container",
         )
@@ -241,39 +302,50 @@ class SquobertOS(App):
     CSS = """
     Screen {
         align: center middle;
-        padding: 4 10;
     }
 
     #main_container {
-        width: 100;
-        max-width: 100;
-        height: auto;
-        border: solid $primary;
-        padding: 1 2;
-    }
-
-    #title {
-        text-align: center;
-        text-style: bold;
-        color: $accent;
-        margin: 1 0;
-    }
-
-    #subtitle {
-        text-align: center;
-        color: $text-muted;
-        margin-bottom: 2;
-    }
-
-    #menu_buttons {
-        width: 100%;
-        height: auto;
+        width: 128;
+        height: 33;
         align: center middle;
     }
 
-    Button {
+    #squobert_face {
+        width: 128;
+        height: 33;
+    }
+
+    #title {
+        layer: overlay;
+        dock: top;
         width: 100%;
-        margin: 1 0;
+        height: 1;
+        text-align: center;
+        text-style: bold;
+        color: $accent;
+        background: $background 50%;
+    }
+
+    #top_buttons {
+        layer: overlay;
+        offset: 1 0;
+        width: 128;
+        height: 1;
+    }
+
+    #bottom_buttons {
+        layer: overlay;
+        dock: bottom;
+        width: 128;
+        height: 1;
+    }
+
+    #top_buttons Button, #bottom_buttons Button {
+        width: 1fr;
+        height: 1;
+        min-height: 1;
+        margin: 0 1;
+        background: $panel 70%;
     }
 
     #wifi_container, #settings_container {
