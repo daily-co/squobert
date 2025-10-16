@@ -1,12 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import type { PipecatBaseChildProps } from "@pipecat-ai/voice-ui-kit";
-import {
-  ConnectButton,
-  ConversationPanel,
-  EventsPanel,
-  UserAudioControl,
-} from "@pipecat-ai/voice-ui-kit";
+import { ConnectButton, UserAudioControl } from "@pipecat-ai/voice-ui-kit";
 
 import type { TransportType } from "../../config";
 import { BotFacePanel } from "./BotFacePanel";
@@ -26,40 +21,82 @@ export const App = ({
   onTransportChange,
   availableTransports,
 }: AppProps) => {
+  const [showSettings, setShowSettings] = useState(false);
+
   useEffect(() => {
     client?.initDevices();
   }, [client]);
 
-  const showTransportSelector = availableTransports.length > 1;
+  const hasTransportSelector = availableTransports.length > 1;
 
   return (
     <div className="flex flex-col w-full h-full">
-      <div className="flex items-center justify-between gap-4 p-4">
-        {showTransportSelector ? (
-          <TransportDropdown
-            transportType={transportType}
-            onTransportChange={onTransportChange}
-            availableTransports={availableTransports}
-          />
-        ) : (
-          <div /> /* Spacer */
-        )}
-        <div className="flex items-center gap-4">
-          <UserAudioControl size="lg" />
-          <ConnectButton
-            size="lg"
-            onConnect={handleConnect}
-            onDisconnect={handleDisconnect}
-          />
-        </div>
-      </div>
-      <div className="flex-1 overflow-hidden px-4">
-        <div className="grid h-full gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-black/30">
-            <BotFacePanel />
+      <div className="relative flex-1 overflow-hidden">
+        <div className="face-stage">
+          <BotFacePanel />
+          <div className="control-float">
+            <ConnectButton
+              size="lg"
+              onConnect={handleConnect}
+              onDisconnect={handleDisconnect}
+            />
+            <button
+              type="button"
+              className="info-button"
+              onClick={() => setShowSettings(true)}
+              aria-haspopup="dialog"
+              aria-expanded={showSettings}
+              aria-label="Show connection settings"
+            >
+              i
+            </button>
           </div>
         </div>
       </div>
+
+      {showSettings ? (
+        <div
+          className="control-modal-backdrop"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Connection settings"
+          onClick={() => setShowSettings(false)}
+        >
+          <div
+            className="control-modal"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <header className="control-modal-header">
+              <h2>Connection Settings</h2>
+              <button
+                type="button"
+                className="close-button"
+                onClick={() => setShowSettings(false)}
+                aria-label="Close settings"
+              >
+                ×
+              </button>
+            </header>
+            <div className="control-modal-content">
+              {hasTransportSelector ? (
+                <section className="control-section">
+                  <h3>Transport</h3>
+                  <TransportDropdown
+                    transportType={transportType}
+                    onTransportChange={onTransportChange}
+                    availableTransports={availableTransports}
+                  />
+                </section>
+              ) : null}
+
+              <section className="control-section">
+                <h3>Microphone</h3>
+                <UserAudioControl size="lg" />
+              </section>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };
