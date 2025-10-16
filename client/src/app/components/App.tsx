@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 
 import type { PipecatBaseChildProps } from "@pipecat-ai/voice-ui-kit";
-import { ConnectButton, UserAudioControl } from "@pipecat-ai/voice-ui-kit";
+import {
+  ConnectButton,
+  UserAudioControl,
+  usePipecatConnectionState,
+} from "@pipecat-ai/voice-ui-kit";
 
 import type { TransportType } from "../../config";
 import { BotFacePanel } from "./BotFacePanel";
@@ -22,6 +26,7 @@ export const App = ({
   availableTransports,
 }: AppProps) => {
   const [showSettings, setShowSettings] = useState(false);
+  const { isConnected, isConnecting } = usePipecatConnectionState();
 
   useEffect(() => {
     client?.initDevices();
@@ -34,7 +39,7 @@ export const App = ({
       <div className="relative flex-1 overflow-hidden">
         <div className="face-stage">
           <BotFacePanel />
-          <div className="control-float">
+          <div className={`control-float ${isConnected ? "connected" : ""}`}>
             <ConnectButton
               size="lg"
               onConnect={handleConnect}
