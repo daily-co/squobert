@@ -35,7 +35,12 @@ from pipecat.transports.daily.transport import DailyParams, DailyTransport
 from pipecat_tail.runner import TailRunner
 from pipecat.services.google.llm import GoogleLLMService
 
-from processors import ScriptProcessor, BotFaceProcessor, RemotePresenceProcessor, LocalPresenceProcessor
+from processors import (
+    ScriptProcessor,
+    BotFaceProcessor,
+    RemotePresenceProcessor,
+    LocalPresenceProcessor,
+)
 
 
 # Load environment variables
@@ -82,10 +87,13 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     # Just make him act like a normal bot for now
     script_processor = ScriptProcessor([])
 
-    messages = [ { "role": "user", "content": "Start by greeting the user warmly, introducing yourself, and mentioning the current day. Be friendly and engaging to set a positive tone for the interaction.", } ]
-    context = LLMContext(
-        messages
-    )
+    messages = [
+        {
+            "role": "user",
+            "content": "Start by greeting the user warmly, introducing yourself, and mentioning the current day. Be friendly and engaging to set a positive tone for the interaction.",
+        }
+    ]
+    context = LLMContext(messages)
 
     context_aggregator = LLMContextAggregatorPair(context)
     bot_face = BotFaceProcessor()
@@ -96,7 +104,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
         [
             transport.input(),
             # remote_presence,
-            local_presence,
+            # local_presence,
             rtvi,
             stt,
             context_aggregator.user(),
@@ -132,30 +140,19 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
                         "data": {"expression": "resting"},
                     }
                 ),
-            ]
-        )
-        await task.queue_frames([LLMRunFrame()])
-
-    @transport.event_handler("on_client_connected")
-    async def on_client_connected(transport, client):
-        logger.info("!!! Client connected")
-        # TODO-CB: Send camera to transport
-        # await maybe_capture_participant_camera(transport, client)
-        # Kick off the conversation.
-        await rtvi.set_bot_ready()
-        await task.queue_frames(
-            [
                 RTVIServerMessageFrame(
                     data={
-                        "event": "expression_change",
-                        "data": {"expression": "resting"},
+                        "event": "show_text",
+                        "data": {"text": "test text", "duration": 30},
                     }
                 ),
             ]
         )
-        await task.queue_frames([LLMRunFrame()])
-        logger.info("!!! sent starting stuff")
 
+    @transport.event_handler("on_client_connected")
+    async def on_client_connected(transport, client):
+        logger.info("!!! Client connected")
+        await task.queue_frames([LLMRunFrame()])
 
     @transport.event_handler("on_client_disconnected")
     async def on_participant_left(transport, client):
@@ -166,6 +163,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     # runner = TailRunner(handle_sigint=runner_args.handle_sigint)
 
     await runner.run(task)
+
 
 async def maybe_capture_participant_camera(
     transport: BaseTransport, client: any, framerate: int = 0
@@ -187,6 +185,7 @@ async def maybe_capture_participant_camera(
             logger.info(f"Capturing camera for participant {client}")
     except ImportError:
         pass
+
 
 async def bot(runner_args: RunnerArguments):
     """Main bot entry point for the bot starter."""
