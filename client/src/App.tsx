@@ -1,4 +1,4 @@
-import { usePipecatClientTransportState } from "@pipecat-ai/client-react";
+import { useRTVIClientTransportState } from "@pipecat-ai/client-react";
 import { VideoProvider } from "./providers/VideoProvider";
 import { BotDisplay } from "./components/BotDisplay/BotDisplay";
 import { AudioComponent } from "./components/AudioComponent";
@@ -12,19 +12,14 @@ import { MicSettingsProvider } from "./providers/MicSettingsProvider";
 
 function AppContent() {
   // Use the transport state
-  const pipecatClientTransportState = usePipecatClientTransportState();
-
+  const rtviTransportState = useRTVIClientTransportState();
+  
   // Determine connection status
-  const isConnected = ["connected", "ready", "joining-meeting"].includes(
-    pipecatClientTransportState
-  );
-
+  const isConnected = ["connected", "ready", "joining-meeting"].includes(rtviTransportState);
+    
   useEffect(() => {
-    console.log(
-      "pipecat client transportState changed:",
-      pipecatClientTransportState
-    );
-  }, [pipecatClientTransportState]);
+    console.log("RTVI transportState changed:", rtviTransportState);
+  }, [rtviTransportState]);
 
   return (
     <div className="app">

@@ -1,10 +1,10 @@
-import { PipecatClientVideo } from "@pipecat-ai/client-react";
+import { RTVIClientVideo } from "@pipecat-ai/client-react";
 
 interface VideoDisplayProps {
   className?: string;
 }
 
 export function VideoDisplay({ className }: VideoDisplayProps) {
-  // PipecatClientVideo expects a participant prop
-  return <PipecatClientVideo className={className} participant="bot" />;
+  // RTVIClientVideo expects a participant prop
+  return <RTVIClientVideo className={className} participant="bot" />;
 }

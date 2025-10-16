@@ -1,5 +1,5 @@
 import React from "react";
-import { usePipecatClient } from "@pipecat-ai/client-react";
+import { useRTVIClient } from "@pipecat-ai/client-react";
 import { useMicSettings } from "../providers/MicSettingsProvider";
 
 interface DebugScreenProps {
@@ -7,7 +7,7 @@ interface DebugScreenProps {
 }
 
 export function DebugScreen({ onClose }: DebugScreenProps) {
-  const client = usePipecatClient();
+  const client = useRTVIClient();
   const { startWithMicEnabled, setStartWithMicEnabled } = useMicSettings();
   const [clientInfo, setClientInfo] = React.useState<any>({});
   console.log({ clientInfo });

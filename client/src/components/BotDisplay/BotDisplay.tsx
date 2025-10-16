@@ -1,9 +1,9 @@
 import { useCallback, useState, useRef, useEffect } from "react";
 import {
   useRTVIClientEvent,
-  usePipecatClientMediaTrack,
-  usePipecatClient,
-  usePipecatClientTransportState,
+  useRTVIClientMediaTrack,
+  useRTVIClient,
+  useRTVIClientTransportState,
 } from "@pipecat-ai/client-react";
 import { RTVIEvent } from "@pipecat-ai/client-js";
 import { useBotExpression } from "../../providers/BotExpressionProvider";
@@ -19,7 +19,7 @@ import { VideoDisplay } from "../VideoDisplay";
 export function BotDisplay() {
   const { expression, setExpression } = useBotExpression();
   const [talking, setTalking] = useState(false);
-  const transportState = usePipecatClientTransportState();
+  const transportState = useRTVIClientTransportState();
 
   const faceRef = useRef<HTMLDivElement>(null);
   const [isBlinking, setIsBlinking] = useState(false);
@@ -27,8 +27,8 @@ export function BotDisplay() {
 
   const [isLoud, setIsLoud] = useState(false);
 
-  const botAudioTrack = usePipecatClientMediaTrack("audio", "bot");
-  const client = usePipecatClient();
+  const botAudioTrack = useRTVIClientMediaTrack("audio", "bot");
+  const client = useRTVIClient();
 
   const [showingText, setShowingText] = useState(false);
   const [displayText, setDisplayText] = useState("");
@@ -92,8 +92,7 @@ export function BotDisplay() {
   }, [isLoud]);
 
   useEffect(() => {
-    // Don't blink when laughing or sleeping
-    if (expression !== "laughing" && expression !== "sleeping") {
+    if (expression !== "laughing") {
       const blink = () => {
         console.log("blink callback");
         setIsBlinking(true);

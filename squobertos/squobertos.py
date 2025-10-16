@@ -77,8 +77,10 @@ class MainMenuScreen(Screen):
 
     BINDINGS = [
         Binding("q", "quit", "Quit"),
-        Binding("1", "configure_wifi", "WiFi"),
-        Binding("2", "launch_ai", "Launch AI"),
+        Binding("1", "chat_mode", "Chat Mode"),
+        Binding("2", "eval_mode", "Eval Mode"),
+        Binding("3", "configure_wifi", "Network"),
+        Binding("4", "configure_audio", "Audio"),
     ]
 
     def compose(self) -> ComposeResult:
@@ -86,20 +88,17 @@ class MainMenuScreen(Screen):
         yield Container(
             LayeredDisplay(id="squobert_face"),
             Horizontal(
-                Button(
-                    "1. WiFi",
-                    id="wifi_btn",
-                    variant="success",
-                    compact=False,
-                    flat=False,
-                ),
-                Button("2. Launch AI", id="ai_btn", variant="success"),
-                Button("3. Settings", id="settings_btn", variant="success"),
+                Button("1: Chat Mode", id="ai_btn", variant="success"),
+                Button("2: Eval Mode", id="settings_btn", variant="success"),
                 id="top_buttons",
             ),
             Horizontal(
-                Button("4. Shell", id="shell_btn"),
-                Button("Q. Quit", id="quit_btn"),
+                Button(
+                    "3: Network",
+                    id="wifi_btn",
+                ),
+                Button("4: Audio", id="audio_btn"),
+                Button("q: Quit", id="quit_btn"),
                 id="bottom_buttons",
             ),
             id="main_container",
@@ -114,21 +113,21 @@ class MainMenuScreen(Screen):
             self.action_launch_ai()
         elif button_id == "settings_btn":
             self.app.push_screen(SettingsScreen())
-        elif button_id == "shell_btn":
-            self.action_shell()
+        elif button_id == "audio_btn":
+            self.action_audio()
         elif button_id == "quit_btn":
             self.app.exit()
 
     def action_configure_wifi(self) -> None:
-        """Open WiFi configuration screen"""
-        self.app.push_screen(WiFiScreen())
+        """Open Network configuration screen"""
+        self.app.push_screen(NetworkScreen())
 
     def action_launch_ai(self) -> None:
         """Launch Squobert AI mode in fullscreen Chromium"""
         self.app.exit(message="launch_ai")
 
-    def action_shell(self) -> None:
-        """Exit to shell"""
+    def action_audio(self) -> None:
+        """Configure audio"""
         self.app.exit(message="shell")
 
     def action_quit(self) -> None:
@@ -136,8 +135,8 @@ class MainMenuScreen(Screen):
         self.app.exit()
 
 
-class WiFiScreen(Screen):
-    """WiFi configuration screen"""
+class NetworkScreen(Screen):
+    """Network configuration screen"""
 
     BINDINGS = [
         Binding("escape", "app.pop_screen", "Back"),
@@ -146,7 +145,7 @@ class WiFiScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Header()
         yield Container(
-            Static("📡 WiFi Configuration", id="title"),
+            Static("📡 Network Configuration", id="title"),
             Vertical(
                 Label("Available Networks:"),
                 Static("Scanning...", id="networks"),
@@ -180,7 +179,7 @@ class WiFiScreen(Screen):
             self.app.pop_screen()
 
     def scan_networks(self) -> None:
-        """Scan for available WiFi networks"""
+        """Scan for available Network networks"""
         networks_widget = self.query_one("#networks", Static)
         networks_widget.update("Scanning...")
 
@@ -214,7 +213,7 @@ class WiFiScreen(Screen):
             networks_widget.update(f"Error: {str(e)}")
 
     def connect_to_network(self) -> None:
-        """Connect to the specified WiFi network"""
+        """Connect to the specified network(s)"""
         ssid_input = self.query_one("#ssid_input", Input)
         password_input = self.query_one("#password_input", Input)
         status_widget = self.query_one("#status", Static)
@@ -349,7 +348,7 @@ class SquobertOS(App):
         width: 1fr;
         height: 5;
         min-height: 1;
-        margin: 0 1;
+        margin: 0 2;
     }
 
     #wifi_container, #settings_container {

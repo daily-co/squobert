@@ -5,5 +5,3 @@ pipecat-ai[cartesia,daily,deepgram,google,local-smart-turn-v3,openai,silero,webr
 pipecat-ai-small-webrtc-prebuilt
 pipecat-ai-tail
 python-dotenv~=1.0.1
-opencv-python>=4.8.0
-numpy>=1.24.0
