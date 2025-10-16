@@ -85,7 +85,6 @@ class MainMenuScreen(Screen):
         yield Header()
         yield Container(
             LayeredDisplay(id="squobert_face"),
-            Static("🤖 SquobertOS", id="title"),
             Horizontal(
                 Button("1. WiFi", id="wifi_btn", variant="primary"),
                 Button("2. Launch AI", id="ai_btn", variant="success"),
@@ -328,16 +327,16 @@ class SquobertOS(App):
 
     #top_buttons {
         layer: overlay;
-        offset: 1 0;
-        width: 128;
-        height: 1;
+        offset: 0 -4;
+        width: 80;
+        height: 5;
     }
 
     #bottom_buttons {
         layer: overlay;
-        dock: bottom;
-        width: 128;
-        height: 1;
+        offset: 0 7;
+        width: 80;
+        height: 5;
     }
 
     #top_buttons Button, #bottom_buttons Button {
