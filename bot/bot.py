@@ -5,7 +5,6 @@
 #
 
 import os
-import random
 
 from dotenv import load_dotenv
 from loguru import logger
@@ -13,18 +12,7 @@ from loguru import logger
 from pipecat.audio.turn.smart_turn.local_smart_turn_v3 import LocalSmartTurnAnalyzerV3
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.audio.vad.vad_analyzer import VADParams
-from pipecat.frames.frames import (
-    BotStartedSpeakingFrame,
-    BotStoppedSpeakingFrame,
-    Frame,
-    LLMFullResponseEndFrame,
-    LLMFullResponseStartFrame,
-    LLMTextFrame,
-    LLMContextFrame,
-    LLMRunFrame,
-    UserStartedSpeakingFrame,
-    UserStoppedSpeakingFrame,
-)
+from pipecat.frames.frames import LLMRunFrame
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
@@ -32,7 +20,6 @@ from pipecat.processors.aggregators.llm_context import LLMContext
 from pipecat.processors.aggregators.llm_response_universal import (
     LLMContextAggregatorPair,
 )
-from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
 from pipecat.processors.frameworks.rtvi import (
     RTVIConfig,
     RTVIObserver,
@@ -46,10 +33,9 @@ from pipecat.services.deepgram.stt import DeepgramSTTService
 from pipecat.transports.base_transport import BaseTransport, TransportParams
 from pipecat.transports.daily.transport import DailyParams, DailyTransport
 from pipecat_tail.runner import TailRunner
-from pipecat.services.google.llm import GoogleLLMService, LLMSearchResponseFrame
+from pipecat.services.google.llm import GoogleLLMService
 
-
-emotions = ["resting", "laughing", "kawaii", "nervous"]
+from processors import ScriptProcessor, BotFaceProcessor, RemotePresenceProcessor, LocalPresenceProcessor
 
 
 # Load environment variables
@@ -75,89 +61,6 @@ script = [
 ]
 
 
-class ScriptProcessor(FrameProcessor):
-    """
-    Accepts a list of strings to use as fixed responses in a scripted conversation. Include "None" elements to allow the LLM to respond during that turn. LLM responses will take over after the script list is complete.
-    """
-
-    def __init__(self, script: list[str | None]):
-        super().__init__()
-        self._script = script
-
-    async def process_frame(self, frame: Frame, direction: FrameDirection):
-        await super().process_frame(frame, direction)
-        if isinstance(frame, LLMContextFrame):
-            if len(self._script) > 0:
-                this_line = self._script.pop(0)
-                if this_line:
-                    await self.push_frame(LLMFullResponseStartFrame())
-                    await self.push_frame(LLMTextFrame(text=this_line))
-                    await self.push_frame(LLMFullResponseEndFrame())
-                else:
-                    # It must have been None, so let the LLM decide what to say
-                    await self.push_frame(frame)
-            else:
-                # We're out of script items, let the LLM do it
-                await self.push_frame(frame)
-        else:
-            await self.push_frame(frame, direction)
-
-
-# TODO: This could probably be an observer?
-class BotFaceProcessor(FrameProcessor):
-    async def process_frame(self, frame: Frame, direction: FrameDirection):
-        await super().process_frame(frame, direction)
-        if isinstance(frame, UserStartedSpeakingFrame):
-            msg_frame = RTVIServerMessageFrame(data={"event": "user_started_speaking"})
-            logger.info("SERVER MESSAGE: User started speaking")
-            await self.push_frame(msg_frame)
-        elif isinstance(frame, UserStoppedSpeakingFrame):
-            msg_frame = RTVIServerMessageFrame(data={"event": "user_stopped_speaking"})
-            logger.info("SERVER MESSAGE: User stopped speaking")
-            await self.push_frame(msg_frame)
-        elif isinstance(frame, BotStartedSpeakingFrame):
-            msg_frame = RTVIServerMessageFrame(data={"event": "bot_started_speaking"})
-            logger.info("SERVER MESSAGE: Bot started speaking")
-            await self.push_frame(msg_frame)
-        elif isinstance(frame, BotStoppedSpeakingFrame):
-            msg_frame = RTVIServerMessageFrame(data={"event": "bot_stopped_speaking"})
-            logger.info("SERVER MESSAGE: Bot stopped speaking")
-            await self.push_frame(msg_frame)
-            emotion_frame = RTVIServerMessageFrame(
-                data={
-                    "event": "expression_change",
-                    "data": {"expression": random.choice(emotions)},
-                }  # random.choice(emotions)
-            )
-            await self.push_frame(emotion_frame)
-            # INFO: The bot also suports hide_text,
-            # text_frame = RTVIServerMessageFrame(
-            #     data={
-            #         "event": "show_text",
-            #         "data": {"text": "test text", "duration": 3},
-            #     }
-            # )
-            # await self.push_frame(text_frame)
-        elif isinstance(frame, LLMSearchResponseFrame):
-            titles_list = list(
-                dict.fromkeys(origin["site_title"] for origin in frame.origins)
-            )
-            titles = (
-                ", ".join(titles_list[:-1]) + " and " + titles_list[-1]
-                if len(titles_list) > 1
-                else titles_list[0]
-                if titles_list
-                else ""
-            )
-            message = f"Info from {titles}"
-            text_frame = RTVIServerMessageFrame(
-                data={"event": "show_text", "data": {"text": message, "duration": 10}}
-            )
-            await self.push_frame(text_frame)
-
-        await self.push_frame(frame, direction)
-
-
 async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     logger.info("Starting bot")
 
@@ -179,21 +82,21 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     # Just make him act like a normal bot for now
     script_processor = ScriptProcessor([])
 
+    messages = [ { "role": "user", "content": "Start by greeting the user warmly, introducing yourself, and mentioning the current day. Be friendly and engaging to set a positive tone for the interaction.", } ]
     context = LLMContext(
-        [
-            {
-                "role": "user",
-                "content": "Start by greeting the user warmly, introducing yourself, and mentioning the current day. Be friendly and engaging to set a positive tone for the interaction.",
-            }
-        ],
+        messages
     )
 
     context_aggregator = LLMContextAggregatorPair(context)
     bot_face = BotFaceProcessor()
+    remote_presence = RemotePresenceProcessor()
+    local_presence = LocalPresenceProcessor(messages=messages)
 
     pipeline = Pipeline(
         [
             transport.input(),
+            # remote_presence,
+            local_presence,
             rtvi,
             stt,
             context_aggregator.user(),
@@ -217,13 +120,12 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
         observers=[RTVIObserver(rtvi)],
     )
 
-    @transport.event_handler("on_client_connected")
-    async def on_client_connected(transport, client):
-        logger.info("Client connected")
-        # Kick off the conversation.
+    @rtvi.event_handler("on_client_ready")
+    async def on_client_ready(rtvi):
+        logger.info("!!! on client ready")
+        await rtvi.set_bot_ready()
         await task.queue_frames(
             [
-                RTVIServerMessageFrame(data={"event": "client connected"}),
                 RTVIServerMessageFrame(
                     data={
                         "event": "expression_change",
@@ -233,6 +135,27 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
             ]
         )
         await task.queue_frames([LLMRunFrame()])
+
+    @transport.event_handler("on_client_connected")
+    async def on_client_connected(transport, client):
+        logger.info("!!! Client connected")
+        # TODO-CB: Send camera to transport
+        # await maybe_capture_participant_camera(transport, client)
+        # Kick off the conversation.
+        await rtvi.set_bot_ready()
+        await task.queue_frames(
+            [
+                RTVIServerMessageFrame(
+                    data={
+                        "event": "expression_change",
+                        "data": {"expression": "resting"},
+                    }
+                ),
+            ]
+        )
+        await task.queue_frames([LLMRunFrame()])
+        logger.info("!!! sent starting stuff")
+
 
     @transport.event_handler("on_client_disconnected")
     async def on_participant_left(transport, client):
@@ -244,6 +167,26 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
 
     await runner.run(task)
 
+async def maybe_capture_participant_camera(
+    transport: BaseTransport, client: any, framerate: int = 0
+):
+    """Capture participant camera video if transport supports it.
+
+    Args:
+        transport: The transport instance.
+        client: Transport-specific client object.
+        framerate: Video capture framerate. Defaults to 0 (auto).
+    """
+    try:
+        from pipecat.transports.daily.transport import DailyTransport
+
+        if isinstance(transport, DailyTransport):
+            await transport.capture_participant_video(
+                client["id"], framerate=1, video_source="camera"
+            )
+            logger.info(f"Capturing camera for participant {client}")
+    except ImportError:
+        pass
 
 async def bot(runner_args: RunnerArguments):
     """Main bot entry point for the bot starter."""
@@ -252,6 +195,8 @@ async def bot(runner_args: RunnerArguments):
         "daily": lambda: DailyParams(
             audio_in_enabled=True,
             audio_out_enabled=True,
+            # TODO-CB: Send camera to transport
+            video_in_enabled=False,
             vad_analyzer=SileroVADAnalyzer(params=VADParams(stop_secs=0.2)),
             turn_analyzer=LocalSmartTurnAnalyzerV3(),
         ),
