@@ -104,7 +104,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
         [
             transport.input(),
             # remote_presence,
-            local_presence,
+            # local_presence,
             rtvi,
             stt,
             context_aggregator.user(),
@@ -147,22 +147,6 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     @transport.event_handler("on_client_connected")
     async def on_client_connected(transport, client):
         logger.info("!!! Client connected")
-        # TODO-CB: Send camera to transport
-        # await maybe_capture_participant_camera(transport, client)
-        # Kick off the conversation.
-        await rtvi.set_bot_ready()
-        await task.queue_frames(
-            [
-                RTVIServerMessageFrame(
-                    data={
-                        "event": "expression_change",
-                        "data": {"expression": "resting"},
-                    }
-                ),
-            ]
-        )
-        await task.queue_frames([LLMRunFrame()])
-        logger.info("!!! sent starting stuff")
 
     @transport.event_handler("on_client_disconnected")
     async def on_participant_left(transport, client):

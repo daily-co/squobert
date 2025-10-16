@@ -1,15 +1,16 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
-import type { PipecatBaseChildProps } from '@pipecat-ai/voice-ui-kit';
+import type { PipecatBaseChildProps } from "@pipecat-ai/voice-ui-kit";
 import {
   ConnectButton,
   ConversationPanel,
   EventsPanel,
   UserAudioControl,
-} from '@pipecat-ai/voice-ui-kit';
+} from "@pipecat-ai/voice-ui-kit";
 
-import type { TransportType } from '../../config';
-import { TransportDropdown } from './TransportDropdown';
+import type { TransportType } from "../../config";
+import { BotFacePanel } from "./BotFacePanel";
+import { TransportDropdown } from "./TransportDropdown";
 
 interface AppProps extends PipecatBaseChildProps {
   transportType: TransportType;
@@ -53,12 +54,11 @@ export const App = ({
         </div>
       </div>
       <div className="flex-1 overflow-hidden px-4">
-        <div className="h-full overflow-hidden">
-          <ConversationPanel />
+        <div className="grid h-full gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-black/30">
+            <BotFacePanel />
+          </div>
         </div>
-      </div>
-      <div className="h-96 overflow-hidden px-4 pb-4">
-        <EventsPanel />
       </div>
     </div>
   );
