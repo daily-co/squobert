@@ -13,6 +13,3 @@ If you push an `RTVIServerMessageFrame` with an `event` type of `show_text`, The
 ## Scripting responses
 
 I use a `ScriptProcessor` to pre-script responses when I make videos. (LLMs are clever, but not quite that clever yet.) You can see an example `script` object at the top of the botfile. If you don't provide a script to the processor, the LLM will just operate normally.
-
-
-
