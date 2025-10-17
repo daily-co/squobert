@@ -39,10 +39,19 @@ export const App = ({
     return true;
   });
 
-  // Connect to presence service
+  // Load presence detection setting from localStorage
+  const [usePresenceDetection, setUsePresenceDetection] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('usePresenceDetection');
+      return stored !== null ? stored === 'true' : true; // Default to true
+    }
+    return true;
+  });
+
+  // Connect to presence service only if enabled
   const { isConnected: presenceConnected, isPresent, faceCount } = usePresence({
     url: PRESENCE_WS_URL,
-    autoConnect: true,
+    autoConnect: usePresenceDetection,
   });
 
   useEffect(() => {
@@ -56,19 +65,27 @@ export const App = ({
     }
   }, [autoConnectOnPresence]);
 
+  // Save presence detection setting to localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('usePresenceDetection', String(usePresenceDetection));
+    }
+  }, [usePresenceDetection]);
+
   // Track previous presence state to avoid duplicate calls
   const prevIsPresent = useRef(isPresent);
 
   // Auto-connect/disconnect based on presence
   useEffect(() => {
     console.log('[Presence] Effect triggered:', {
+      usePresenceDetection,
       autoConnectOnPresence,
       isPresent,
       prevIsPresent: prevIsPresent.current,
       isConnected,
     });
 
-    if (!autoConnectOnPresence) return;
+    if (!usePresenceDetection || !autoConnectOnPresence) return;
 
     // Only act on presence changes, not initial mount
     if (prevIsPresent.current !== isPresent) {
@@ -82,7 +99,7 @@ export const App = ({
     }
 
     prevIsPresent.current = isPresent;
-  }, [isPresent, isConnected, autoConnectOnPresence, handleConnect, handleDisconnect]);
+  }, [isPresent, isConnected, usePresenceDetection, autoConnectOnPresence, handleConnect, handleDisconnect]);
 
   const hasTransportSelector = availableTransports.length > 1;
 
@@ -90,7 +107,7 @@ export const App = ({
     <div className="flex flex-col w-full h-full">
       <div className="relative flex-1 overflow-hidden">
         <div className="face-stage">
-          <BotFacePanel />
+          <BotFacePanel isPresent={isPresent} usePresenceDetection={usePresenceDetection} />
           <div className={`control-float ${isConnected ? "connected" : ""}`}>
             <ConnectButton
               size="xl"
@@ -155,12 +172,22 @@ export const App = ({
 
               <section className="control-section">
                 <h3>Presence</h3>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: '8px' }}>
+                  <input
+                    type="checkbox"
+                    checked={usePresenceDetection}
+                    onChange={(e) => setUsePresenceDetection(e.target.checked)}
+                    style={{ cursor: 'pointer' }}
+                  />
+                  <span>Enable presence detection</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', opacity: usePresenceDetection ? 1 : 0.5 }}>
                   <input
                     type="checkbox"
                     checked={autoConnectOnPresence}
                     onChange={(e) => setAutoConnectOnPresence(e.target.checked)}
-                    style={{ cursor: 'pointer' }}
+                    disabled={!usePresenceDetection}
+                    style={{ cursor: usePresenceDetection ? 'pointer' : 'not-allowed' }}
                   />
                   <span>Auto-connect when present</span>
                 </label>

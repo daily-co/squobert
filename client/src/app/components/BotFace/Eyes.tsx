@@ -9,7 +9,13 @@ export function Eyes({ expression, isBlinking }: EyesProps) {
   return (
     <>
       <svg className="eyes" viewBox="0 0 600 400">
-        {expression === 'laughing' ? (
+        {expression === 'sleeping' ? (
+          <>
+            {/* Closed eyes for sleeping */}
+            <path d="M 90 180 Q 110 190, 130 180" fill="none" stroke="#000" strokeWidth="8" strokeLinecap="round" />
+            <path d="M 470 180 Q 490 190, 510 180" fill="none" stroke="#000" strokeWidth="8" strokeLinecap="round" />
+          </>
+        ) : expression === 'laughing' ? (
           <>
             <path d="M 90 180 Q 110 160, 130 180" fill="none" stroke="#000" strokeWidth="8" strokeLinecap="round" />
             <path d="M 470 180 Q 490 160, 510 180" fill="none" stroke="#000" strokeWidth="8" strokeLinecap="round" />

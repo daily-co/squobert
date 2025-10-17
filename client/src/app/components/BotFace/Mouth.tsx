@@ -33,6 +33,12 @@ export function Mouth({ expression }: MouthProps) {
           strokeLinejoin="round"
         />
       )}
+      {expression === 'sleeping' && (
+        <>
+          <path d="M 250 210 Q 275 230, 300 210" fill="none" stroke="#000" strokeWidth="8" strokeLinecap="round" />
+          <path d="M 300 210 Q 325 230, 350 210" fill="none" stroke="#000" strokeWidth="8" strokeLinecap="round" />
+        </>
+      )}
     </svg>
   );
 }

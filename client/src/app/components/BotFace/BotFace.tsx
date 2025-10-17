@@ -3,6 +3,7 @@ import { forwardRef } from 'react';
 import { Blush } from './Blush';
 import { Eyes } from './Eyes';
 import { Mouth } from './Mouth';
+import { SleepingZs } from './SleepingZs';
 import type { Expression } from './types';
 
 interface BotFaceProps {
@@ -23,6 +24,7 @@ export const BotFace = forwardRef<HTMLDivElement, BotFaceProps>(
         <Blush expression={expression} />
         <Eyes expression={expression} isBlinking={isBlinking} />
         <Mouth expression={expression} />
+        {expression === 'sleeping' && <SleepingZs />}
       </div>
     );
   },

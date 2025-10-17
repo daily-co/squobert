@@ -22,7 +22,7 @@ class FaceDetector:
         camera_index: int = 0,
         interval: float = 1.0,
         present_delay: float = 5.0,
-        absent_delay: float = 10.0,
+        absent_delay: float = 5.0,
     ):
         """
         Initialize the face detector.
@@ -68,10 +68,7 @@ class FaceDetector:
 
         # Detect faces
         faces = self._face_cascade.detectMultiScale(
-            gray,
-            scaleFactor=1.1,
-            minNeighbors=5,
-            minSize=(30, 30)
+            gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30)
         )
 
         return faces
@@ -107,7 +104,7 @@ class FaceDetector:
             raise RuntimeError(f"Could not open camera {self.camera_index}")
 
         # Load the Haar Cascade for face detection
-        cascade_path = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
+        cascade_path = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
         self._face_cascade = cv2.CascadeClassifier(cascade_path)
 
         if self._face_cascade.empty():

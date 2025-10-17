@@ -4,4 +4,5 @@ export type Expression =
   | 'thinking'
   | 'laughing'
   | 'kawaii'
-  | 'nervous';
+  | 'nervous'
+  | 'sleeping';
