@@ -15,7 +15,12 @@ type Timeout = ReturnType<typeof setTimeout>;
 
 const EXPRESSION_RESET_DELAY_MS = 3000;
 
-export function BotFacePanel() {
+interface BotFacePanelProps {
+  isPresent: boolean;
+  usePresenceDetection: boolean;
+}
+
+export function BotFacePanel({ isPresent, usePresenceDetection }: BotFacePanelProps) {
   const [expression, setExpression] = useState<Expression>('resting');
   const [talking, setTalking] = useState(false);
   const [isBlinking, setIsBlinking] = useState(false);
@@ -31,6 +36,7 @@ export function BotFacePanel() {
   const blinkResetRef = useRef<Timeout | undefined>(undefined);
   const expressionResetRef = useRef<Timeout | undefined>(undefined);
   const textResetRef = useRef<Timeout | undefined>(undefined);
+  const prevIsPresent = useRef(isPresent);
 
   useEffect(() => {
     return () => {
@@ -146,10 +152,38 @@ export function BotFacePanel() {
     } else if (transportState === 'connected' || transportState === 'ready') {
       setExpression((prev) => (prev === 'resting' ? 'thinking' : prev));
     } else if (transportState === 'disconnected') {
-      setExpression('resting');
+      // When disconnected, show sleeping if presence detection is enabled and not present, otherwise resting
+      if (usePresenceDetection) {
+        setExpression(isPresent ? 'resting' : 'sleeping');
+      } else {
+        setExpression('resting');
+      }
       setShowingText(false);
     }
-  }, [transportState]);
+  }, [transportState, isPresent, usePresenceDetection]);
+
+  // Handle presence changes - show kawaii when someone arrives, sleeping when they leave
+  useEffect(() => {
+    if (!usePresenceDetection) return;
+
+    if (prevIsPresent.current !== isPresent) {
+      if (isPresent) {
+        // Someone arrived - show kawaii face (regardless of connection state)
+        setExpression('kawaii');
+        // Reset to resting after a delay
+        if (expressionResetRef.current) {
+          clearTimeout(expressionResetRef.current);
+        }
+        expressionResetRef.current = setTimeout(() => {
+          setExpression('resting');
+        }, EXPRESSION_RESET_DELAY_MS);
+      } else if (!isPresent) {
+        // No one present - show sleeping (regardless of connection state)
+        setExpression('sleeping');
+      }
+    }
+    prevIsPresent.current = isPresent;
+  }, [isPresent, transportState, usePresenceDetection]);
 
   const scheduleExpressionReset = useCallback(() => {
     if (expressionResetRef.current) {

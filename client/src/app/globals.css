@@ -79,6 +79,13 @@
   }
 }
 
+/* Sleeping animations */
+.sleeping-zs {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
 .face.listening .eyebrows {
   transform: translateY(-20px);
 }
