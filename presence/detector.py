@@ -17,16 +17,26 @@ class FaceDetector:
     Async-friendly face detector that continuously monitors a camera feed.
     """
 
-    def __init__(self, camera_index: int = 0, interval: float = 1.0):
+    def __init__(
+        self,
+        camera_index: int = 0,
+        interval: float = 1.0,
+        present_delay: float = 5.0,
+        absent_delay: float = 10.0,
+    ):
         """
         Initialize the face detector.
 
         Args:
             camera_index: Camera device index (default: 0)
             interval: Interval between detections in seconds (default: 1.0)
+            present_delay: Seconds of continuous face detection before marking present (default: 5.0)
+            absent_delay: Seconds of no faces before marking absent (default: 10.0)
         """
         self.camera_index = camera_index
         self.interval = interval
+        self.present_delay = present_delay
+        self.absent_delay = absent_delay
 
         self._cap: Optional[cv2.VideoCapture] = None
         self._face_cascade: Optional[cv2.CascadeClassifier] = None
@@ -38,6 +48,10 @@ class FaceDetector:
         self._face_count = 0
         self._last_update = None
         self._error = None
+
+        # Presence tracking for debouncing
+        self._faces_detected_since: Optional[float] = None
+        self._no_faces_since: Optional[float] = None
 
     def _detect_faces(self, frame):
         """
@@ -128,6 +142,7 @@ class FaceDetector:
 
         while self._running:
             start_time = time.time()
+            current_time = time.time()
 
             # Run detection in thread pool to avoid blocking
             success, face_count, error = await loop.run_in_executor(
@@ -136,9 +151,38 @@ class FaceDetector:
 
             # Update state
             if success:
-                self._present = face_count > 0
                 self._face_count = face_count
                 self._error = None
+
+                # Debounce presence logic
+                if face_count > 0:
+                    # Faces detected
+                    if self._faces_detected_since is None:
+                        # Start tracking continuous detection
+                        self._faces_detected_since = current_time
+
+                    # Reset the "no faces" timer
+                    self._no_faces_since = None
+
+                    # Check if faces have been detected long enough
+                    if not self._present:
+                        detection_duration = current_time - self._faces_detected_since
+                        if detection_duration >= self.present_delay:
+                            self._present = True
+                else:
+                    # No faces detected
+                    if self._no_faces_since is None:
+                        # Start tracking time with no faces
+                        self._no_faces_since = current_time
+
+                    # Reset the "faces detected" timer
+                    self._faces_detected_since = None
+
+                    # Check if enough time has passed without faces
+                    if self._present:
+                        no_face_duration = current_time - self._no_faces_since
+                        if no_face_duration >= self.absent_delay:
+                            self._present = False
             else:
                 self._error = error
 
