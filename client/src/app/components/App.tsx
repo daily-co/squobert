@@ -26,7 +26,7 @@ export const App = ({
   availableTransports,
 }: AppProps) => {
   const [showSettings, setShowSettings] = useState(false);
-  const { isConnected, isConnecting } = usePipecatConnectionState();
+  const { isConnected } = usePipecatConnectionState();
 
   useEffect(() => {
     client?.initDevices();
