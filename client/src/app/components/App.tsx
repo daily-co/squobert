@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { PipecatBaseChildProps } from "@pipecat-ai/voice-ui-kit";
 import {
@@ -30,6 +30,15 @@ export const App = ({
   const [showSettings, setShowSettings] = useState(false);
   const { isConnected } = usePipecatConnectionState();
 
+  // Load auto-connect setting from localStorage
+  const [autoConnectOnPresence, setAutoConnectOnPresence] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('autoConnectOnPresence');
+      return stored !== null ? stored === 'true' : true; // Default to true
+    }
+    return true;
+  });
+
   // Connect to presence service
   const { isConnected: presenceConnected, isPresent, faceCount } = usePresence({
     url: PRESENCE_WS_URL,
@@ -39,6 +48,41 @@ export const App = ({
   useEffect(() => {
     client?.initDevices();
   }, [client]);
+
+  // Save auto-connect setting to localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('autoConnectOnPresence', String(autoConnectOnPresence));
+    }
+  }, [autoConnectOnPresence]);
+
+  // Track previous presence state to avoid duplicate calls
+  const prevIsPresent = useRef(isPresent);
+
+  // Auto-connect/disconnect based on presence
+  useEffect(() => {
+    console.log('[Presence] Effect triggered:', {
+      autoConnectOnPresence,
+      isPresent,
+      prevIsPresent: prevIsPresent.current,
+      isConnected,
+    });
+
+    if (!autoConnectOnPresence) return;
+
+    // Only act on presence changes, not initial mount
+    if (prevIsPresent.current !== isPresent) {
+      if (isPresent && !isConnected) {
+        console.log('[Presence] User detected - auto-connecting');
+        handleConnect();
+      } else if (!isPresent && isConnected) {
+        console.log('[Presence] User left - auto-disconnecting');
+        handleDisconnect();
+      }
+    }
+
+    prevIsPresent.current = isPresent;
+  }, [isPresent, isConnected, autoConnectOnPresence, handleConnect, handleDisconnect]);
 
   const hasTransportSelector = availableTransports.length > 1;
 
@@ -107,6 +151,24 @@ export const App = ({
               <section className="control-section">
                 <h3>Microphone</h3>
                 <UserAudioControl size="xl" />
+              </section>
+
+              <section className="control-section">
+                <h3>Presence</h3>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={autoConnectOnPresence}
+                    onChange={(e) => setAutoConnectOnPresence(e.target.checked)}
+                    style={{ cursor: 'pointer' }}
+                  />
+                  <span>Auto-connect when present</span>
+                </label>
+                {presenceConnected && (
+                  <div style={{ marginTop: '8px', fontSize: '0.875rem', opacity: 0.7 }}>
+                    Status: {isPresent ? `Present (${faceCount} face${faceCount !== 1 ? 's' : ''})` : 'Not present'}
+                  </div>
+                )}
               </section>
             </div>
           </div>
