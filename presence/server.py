@@ -11,6 +11,7 @@ from contextlib import asynccontextmanager
 from typing import Set
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from loguru import logger
 
@@ -67,6 +68,15 @@ app = FastAPI(
     description="Real-time face presence detection over WebSocket",
     version="1.0.0",
     lifespan=lifespan,
+)
+
+# Add CORS middleware to allow WebSocket connections from the client
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, restrict this to specific origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -136,12 +146,12 @@ async def get_status():
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     """WebSocket endpoint for real-time presence updates."""
-    await websocket.accept()
-    connected_clients.add(websocket)
-
-    logger.info(f"Client connected. Total clients: {len(connected_clients)}")
-
     try:
+        await websocket.accept()
+        connected_clients.add(websocket)
+
+        logger.info(f"Client connected. Total clients: {len(connected_clients)}")
+
         # Send initial status
         initial_status = detector.get_status()
         logger.debug(f"Sending initial status: {initial_status}")
@@ -153,10 +163,11 @@ async def websocket_endpoint(websocket: WebSocket):
             try:
                 await websocket.receive_text()
             except WebSocketDisconnect:
+                logger.info("Client disconnected normally")
                 break
 
     except Exception as e:
-        logger.error(f"WebSocket error: {e}")
+        logger.error(f"WebSocket error: {e}", exc_info=True)
     finally:
         connected_clients.discard(websocket)
         logger.info(f"Client disconnected. Total clients: {len(connected_clients)}")
