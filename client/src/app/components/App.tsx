@@ -8,8 +8,10 @@ import {
 } from "@pipecat-ai/voice-ui-kit";
 
 import type { TransportType } from "../../config";
+import { PRESENCE_WS_URL } from "../../config";
 import { BotFacePanel } from "./BotFacePanel";
 import { TransportDropdown } from "./TransportDropdown";
+import { usePresence } from "../../hooks/usePresence";
 
 interface AppProps extends PipecatBaseChildProps {
   transportType: TransportType;
@@ -27,6 +29,12 @@ export const App = ({
 }: AppProps) => {
   const [showSettings, setShowSettings] = useState(false);
   const { isConnected } = usePipecatConnectionState();
+
+  // Connect to presence service
+  const { isConnected: presenceConnected, isPresent, faceCount } = usePresence({
+    url: PRESENCE_WS_URL,
+    autoConnect: true,
+  });
 
   useEffect(() => {
     client?.initDevices();

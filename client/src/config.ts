@@ -14,3 +14,6 @@ export const TRANSPORT_CONFIG: Record<TransportType, any> = {
   daily: { endpoint: "/api/start" },
   smallwebrtc: { webrtcUrl: "/api/offer" },
 };
+
+// Presence service configuration
+export const PRESENCE_WS_URL = process.env.NEXT_PUBLIC_PRESENCE_WS_URL || "ws://localhost:8765/ws";
