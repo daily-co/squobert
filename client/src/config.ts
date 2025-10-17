@@ -5,7 +5,7 @@
 
 export type TransportType = "daily" | "smallwebrtc";
 
-export const AVAILABLE_TRANSPORTS: TransportType[] = ["daily", "small_webrtc"];
+export const AVAILABLE_TRANSPORTS: TransportType[] = ["daily", "smallwebrtc"];
 
 export const DEFAULT_TRANSPORT: TransportType = "daily";
 

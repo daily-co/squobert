@@ -27,10 +27,10 @@ export function BotFacePanel() {
   const client = usePipecatClient();
   const botAudioTrack = usePipecatClientMediaTrack('audio', 'bot');
 
-  const blinkTimeoutRef = useRef<Timeout>();
-  const blinkResetRef = useRef<Timeout>();
-  const expressionResetRef = useRef<Timeout>();
-  const textResetRef = useRef<Timeout>();
+  const blinkTimeoutRef = useRef<Timeout | undefined>(undefined);
+  const blinkResetRef = useRef<Timeout | undefined>(undefined);
+  const expressionResetRef = useRef<Timeout | undefined>(undefined);
+  const textResetRef = useRef<Timeout | undefined>(undefined);
 
   useEffect(() => {
     return () => {
