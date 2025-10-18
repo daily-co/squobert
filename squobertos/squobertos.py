@@ -401,10 +401,8 @@ class SquobertOS(App):
     #presence_status {
         width: 100%;
         height: auto;
-        text-align: center;
+        text-align: left;
         color: $accent;
-        background: $background 80%;
-        padding: 0 1;
     }
     """
 
