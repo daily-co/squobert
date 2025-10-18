@@ -22,8 +22,12 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 2. Install dependencies:
 ```bash
+
 pip install -r requirements.txt
+
 ```
+
+TODO-CB: Document all the terrible Raspberry Pi stuff I had to do to get opencv working
 
 ## Usage
 

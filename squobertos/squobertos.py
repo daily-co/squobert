@@ -6,12 +6,20 @@ A terminal-based interface for configuring Squobert at new locations
 
 import subprocess
 import sys
+import threading
+import asyncio
 from pathlib import Path
 from textual.app import App, ComposeResult
 from textual.containers import Container, Vertical, Horizontal
 from textual.widgets import Header, Footer, Button, Label, Input, Static
 from textual.screen import Screen
 from textual.binding import Binding
+
+# Import presence detection server
+import os
+sys.path.insert(0, str(Path(__file__).parent.parent / "presence"))
+from server import app as presence_app
+import uvicorn
 
 
 class LayeredDisplay(Static):
@@ -87,6 +95,7 @@ class MainMenuScreen(Screen):
         yield Header()
         yield Container(
             LayeredDisplay(id="squobert_face"),
+            Static("🔴 Presence: Starting...", id="presence_status"),
             Horizontal(
                 Button("1: Chat Mode", id="ai_btn", variant="success"),
                 Button("2: Eval Mode", id="settings_btn", variant="success"),
@@ -303,6 +312,10 @@ class SettingsScreen(Screen):
 class SquobertOS(App):
     """SquobertOS Configuration TUI"""
 
+    # Presence server thread
+    presence_server_thread = None
+    presence_server_running = False
+
     CSS = """
     Screen {
         align: center middle;
@@ -385,13 +398,77 @@ class SquobertOS(App):
         text-align: center;
         color: $accent;
     }
+
+    #presence_status {
+        layer: overlay;
+        offset: 0 -12;
+        width: 80;
+        height: 1;
+        text-align: center;
+        color: $accent;
+    }
     """
 
     def on_mount(self) -> None:
         """Set up the application"""
         self.title = "SquobertOS"
         self.sub_title = "Configuration Interface"
+        self.start_presence_server()
         self.push_screen(MainMenuScreen())
+        # Set up periodic presence status check
+        self.set_interval(2.0, self.update_presence_status)
+
+    def update_presence_status(self) -> None:
+        """Update the presence status indicator"""
+        import requests
+        try:
+            response = requests.get("http://localhost:8765/status", timeout=1)
+            if response.status_code == 200:
+                data = response.json()
+                present = data.get("present", False)
+                face_count = data.get("face_count", 0)
+                if present:
+                    status_text = f"🟢 Presence: Active ({face_count} face{'s' if face_count != 1 else ''})"
+                else:
+                    status_text = "🟡 Presence: No faces detected"
+            else:
+                status_text = "🔴 Presence: Error"
+        except Exception:
+            status_text = "🔴 Presence: Starting..."
+
+        # Update the status widget if it exists and we're on the main screen
+        try:
+            if hasattr(self.screen, "query_one"):
+                status_widget = self.screen.query_one("#presence_status", Static)
+                status_widget.update(status_text)
+        except Exception:
+            pass  # Widget not found or screen changed
+
+    def start_presence_server(self) -> None:
+        """Start the presence detection server in a background thread"""
+        if self.presence_server_running:
+            return
+
+        def run_server():
+            """Run uvicorn server in this thread"""
+            config = uvicorn.Config(
+                presence_app,
+                host="0.0.0.0",
+                port=8765,
+                log_level="info",
+                loop="asyncio"
+            )
+            server = uvicorn.Server(config)
+            asyncio.run(server.serve())
+
+        self.presence_server_thread = threading.Thread(target=run_server, daemon=True)
+        self.presence_server_thread.start()
+        self.presence_server_running = True
+
+    def stop_presence_server(self) -> None:
+        """Stop the presence detection server"""
+        # The daemon thread will be automatically cleaned up when the app exits
+        self.presence_server_running = False
 
 
 def launch_ai_mode():
