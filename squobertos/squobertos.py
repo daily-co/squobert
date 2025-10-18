@@ -17,6 +17,7 @@ from textual.binding import Binding
 
 # Import presence detection server
 import os
+
 sys.path.insert(0, str(Path(__file__).parent.parent / "presence"))
 from server import app as presence_app
 import uvicorn
@@ -95,18 +96,16 @@ class MainMenuScreen(Screen):
         yield Header()
         yield Container(
             LayeredDisplay(id="squobert_face"),
-            Static("🔴 Presence: Starting...", id="presence_status"),
             Horizontal(
-                Button("1: Chat Mode", id="ai_btn", variant="success"),
-                Button("2: Eval Mode", id="settings_btn", variant="success"),
+                Static("🔴 Presence: Starting...", id="presence_status"),
                 id="top_buttons",
             ),
             Horizontal(
+                Button("1: Launch", id="ai_btn", variant="success"),
                 Button(
-                    "3: Network",
+                    "2: Settings",
                     id="wifi_btn",
                 ),
-                Button("4: Audio", id="audio_btn"),
                 Button("q: Quit", id="quit_btn"),
                 id="bottom_buttons",
             ),
@@ -400,12 +399,12 @@ class SquobertOS(App):
     }
 
     #presence_status {
-        layer: overlay;
-        offset: 0 -12;
-        width: 80;
-        height: 1;
+        width: 100%;
+        height: auto;
         text-align: center;
         color: $accent;
+        background: $background 80%;
+        padding: 0 1;
     }
     """
 
@@ -421,6 +420,7 @@ class SquobertOS(App):
     def update_presence_status(self) -> None:
         """Update the presence status indicator"""
         import requests
+
         try:
             response = requests.get("http://localhost:8765/status", timeout=1)
             if response.status_code == 200:
@@ -451,12 +451,19 @@ class SquobertOS(App):
 
         def run_server():
             """Run uvicorn server in this thread"""
+            # Redirect uvicorn logs to /dev/null to prevent them from displaying over the UI
+            import logging
+
+            logging.getLogger("uvicorn").setLevel(logging.CRITICAL)
+            logging.getLogger("uvicorn.access").setLevel(logging.CRITICAL)
+            logging.getLogger("uvicorn.error").setLevel(logging.CRITICAL)
+
             config = uvicorn.Config(
                 presence_app,
                 host="0.0.0.0",
                 port=8765,
-                log_level="info",
-                loop="asyncio"
+                log_level="critical",
+                loop="asyncio",
             )
             server = uvicorn.Server(config)
             asyncio.run(server.serve())
