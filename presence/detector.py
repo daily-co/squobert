@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 import cv2
+import os
 
 
 class FaceDetector:
@@ -104,7 +105,18 @@ class FaceDetector:
             raise RuntimeError(f"Could not open camera {self.camera_index}")
 
         # Load the Haar Cascade for face detection
-        cascade_path = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+        # Try multiple locations
+        cascade_locations = [
+            #    /usr/share/opencv4/haarcascades/haarcascade
+            '/usr/share/opencv4/haarcascades/',
+            '/usr/share/opencv/haarcascades/',
+        ]
+
+        for loc in cascade_locations:
+            if os.path.exists(loc):
+                cascade_path = loc + 'haarcascade_frontalface_default.xml'
+                break
+        # cascade_path = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
         self._face_cascade = cv2.CascadeClassifier(cascade_path)
 
         if self._face_cascade.empty():

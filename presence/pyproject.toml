@@ -1,0 +1,15 @@
+[project]
+name = "presence"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.119.0",
+    "loguru>=0.7.3",
+    "uvicorn[standard]>=0.38.0",
+    "websockets>=15.0.1",
+]
+
+# [tool.uv]
+# system-packages = ["python3-opencv"]  # 4.6.0
