@@ -66,7 +66,7 @@ script = [
 ]
 
 
-async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
+async def run_bot(transport: BaseTransport, runner_args: RunnerArguments, eval_config: dict = None):
     logger.info("Starting bot")
 
     stt = DeepgramSTTService(api_key=os.getenv("DEEPGRAM_API_KEY"))
@@ -87,10 +87,15 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     # Just make him act like a normal bot for now
     script_processor = ScriptProcessor([])
 
+    # Use eval prompt if in eval mode, otherwise use default
+    initial_prompt = "Start by greeting the user warmly, introducing yourself, and mentioning the current day. Be friendly and engaging to set a positive tone for the interaction."
+    if eval_config and 'prompt' in eval_config:
+        initial_prompt = eval_config['prompt']
+
     messages = [
         {
             "role": "user",
-            "content": "Start by greeting the user warmly, introducing yourself, and mentioning the current day. Be friendly and engaging to set a positive tone for the interaction.",
+            "content": initial_prompt,
         }
     ]
     context = LLMContext(messages)
@@ -152,7 +157,13 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     @transport.event_handler("on_client_connected")
     async def on_client_connected(transport, client):
         logger.info("!!! Client connected")
-        await task.queue_frames([LLMRunFrame()])
+        # Only send LLMRunFrame if squobert_talks_first is True (default) or not in eval mode
+        squobert_talks_first = True
+        if eval_config and 'squobert_talks_first' in eval_config:
+            squobert_talks_first = eval_config['squobert_talks_first']
+
+        if squobert_talks_first:
+            await task.queue_frames([LLMRunFrame()])
 
     @transport.event_handler("on_client_disconnected")
     async def on_participant_left(transport, client):
@@ -190,6 +201,18 @@ async def maybe_capture_participant_camera(
 async def bot(runner_args: RunnerArguments):
     """Main bot entry point for the bot starter."""
 
+    # Check for eval mode
+    eval_config = None
+    if hasattr(runner_args, 'body') and runner_args.body and isinstance(runner_args.body, dict):
+        eval_config = runner_args.body.get('eval')
+        if eval_config:
+            logger.info("Running in eval mode")
+            # Override room_url and token from eval config
+            if 'room_url' in eval_config:
+                runner_args.room_url = eval_config['room_url']
+            if 'token' in eval_config:
+                runner_args.token = eval_config['token']
+
     transport_params = {
         "daily": lambda: DailyParams(
             audio_in_enabled=True,
@@ -209,7 +232,7 @@ async def bot(runner_args: RunnerArguments):
 
     transport = await create_transport(runner_args, transport_params)
 
-    await run_bot(transport, runner_args)
+    await run_bot(transport, runner_args, eval_config)
 
 
 if __name__ == "__main__":

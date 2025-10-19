@@ -28,6 +28,10 @@ export const App = ({
   availableTransports,
 }: AppProps) => {
   const [showSettings, setShowSettings] = useState(false);
+  const [showEvalModal, setShowEvalModal] = useState(false);
+  const [evalRoomUrl, setEvalRoomUrl] = useState("");
+  const [evalPrompt, setEvalPrompt] = useState("");
+  const [squobertSpeaksFirst, setSquobertSpeaksFirst] = useState(false);
   const { isConnected } = usePipecatConnectionState();
 
   // Load auto-connect setting from localStorage
@@ -243,6 +247,188 @@ export const App = ({
                       : "Not present"}
                   </div>
                 )}
+              </section>
+
+              <section className="control-section">
+                <h3>Eval</h3>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowSettings(false);
+                    setShowEvalModal(true);
+                  }}
+                  style={{
+                    padding: "0.75rem 1.5rem",
+                    borderRadius: "0.5rem",
+                    border: "1px solid rgba(255, 255, 255, 0.2)",
+                    background: "rgba(255, 255, 255, 0.05)",
+                    color: "#f1f5f9",
+                    cursor: "pointer",
+                    fontSize: "0.95rem",
+                    fontWeight: "500",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
+                    e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.3)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "rgba(255, 255, 255, 0.05)";
+                    e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)";
+                  }}
+                >
+                  Open Eval Mode
+                </button>
+              </section>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {showEvalModal ? (
+        <div
+          className="control-modal-backdrop"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Eval mode settings"
+          onClick={() => setShowEvalModal(false)}
+        >
+          <div
+            className="control-modal"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <header className="control-modal-header">
+              <h2>Eval Mode</h2>
+              <button
+                type="button"
+                className="close-button"
+                onClick={() => setShowEvalModal(false)}
+                aria-label="Close eval mode"
+              >
+                ×
+              </button>
+            </header>
+            <div className="control-modal-content">
+              <section className="control-section">
+                <label
+                  htmlFor="eval-room-url"
+                  style={{
+                    fontSize: "0.95rem",
+                    fontWeight: "500",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  Daily Room URL
+                </label>
+                <input
+                  id="eval-room-url"
+                  type="text"
+                  value={evalRoomUrl}
+                  onChange={(e) => setEvalRoomUrl(e.target.value)}
+                  placeholder="https://..."
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem",
+                    borderRadius: "0.5rem",
+                    border: "1px solid rgba(255, 255, 255, 0.2)",
+                    background: "rgba(255, 255, 255, 0.05)",
+                    color: "#f1f5f9",
+                    fontSize: "0.95rem",
+                  }}
+                />
+              </section>
+
+              <section className="control-section">
+                <label
+                  htmlFor="eval-prompt"
+                  style={{
+                    fontSize: "0.95rem",
+                    fontWeight: "500",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  Prompt
+                </label>
+                <textarea
+                  id="eval-prompt"
+                  value={evalPrompt}
+                  onChange={(e) => setEvalPrompt(e.target.value)}
+                  placeholder="Enter prompt for the eval bot..."
+                  rows={4}
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem",
+                    borderRadius: "0.5rem",
+                    border: "1px solid rgba(255, 255, 255, 0.2)",
+                    background: "rgba(255, 255, 255, 0.05)",
+                    color: "#f1f5f9",
+                    fontSize: "0.95rem",
+                    resize: "vertical",
+                    fontFamily: "inherit",
+                  }}
+                />
+              </section>
+
+              <section className="control-section">
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    cursor: "pointer",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={squobertSpeaksFirst}
+                    onChange={(e) => setSquobertSpeaksFirst(e.target.checked)}
+                    style={{ cursor: "pointer" }}
+                  />
+                  <span>Squobert speaks first</span>
+                </label>
+              </section>
+
+              <section className="control-section">
+                <button
+                  type="button"
+                  onClick={() => {
+                    // TODO: Implement eval connection logic
+                    console.log("Eval connect:", {
+                      roomUrl: evalRoomUrl,
+                      prompt: evalPrompt,
+                      squobertSpeaksFirst,
+                    });
+                  }}
+                  disabled={!evalRoomUrl.trim()}
+                  style={{
+                    width: "100%",
+                    padding: "0.875rem 1.5rem",
+                    borderRadius: "0.5rem",
+                    border: "none",
+                    background: evalRoomUrl.trim()
+                      ? "rgba(59, 130, 246, 0.8)"
+                      : "rgba(255, 255, 255, 0.1)",
+                    color: evalRoomUrl.trim()
+                      ? "#fff"
+                      : "rgba(255, 255, 255, 0.5)",
+                    cursor: evalRoomUrl.trim() ? "pointer" : "not-allowed",
+                    fontSize: "1rem",
+                    fontWeight: "600",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (evalRoomUrl.trim()) {
+                      e.currentTarget.style.background = "rgba(59, 130, 246, 1)";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (evalRoomUrl.trim()) {
+                      e.currentTarget.style.background = "rgba(59, 130, 246, 0.8)";
+                    }
+                  }}
+                >
+                  Connect
+                </button>
               </section>
             </div>
           </div>
