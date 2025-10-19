@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   // Use BOT_START_URL from environment or fallback to localhost
   const botStartUrl =
-    process.env.BOT_START_URL || 'http://localhost:7860/start';
+    process.env.BOT_START_URL || "http://localhost:7860/start";
 
   try {
     // Parse the request body to check for eval object
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
 
     // Prepare headers - make API key optional
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
 
     // Only add Authorization header if API key is provided
@@ -29,7 +29,10 @@ export async function POST(request: Request) {
     let botRequestBody: any;
     if (requestBody.eval) {
       // If eval object is present, only send the eval object
-      botRequestBody = { eval: requestBody.eval };
+      if (!requestBody.eval.token) {
+        requestBody.eval.token = ""
+      }
+      botRequestBody = { body: { eval: requestBody.eval } };
     } else {
       // Otherwise, use the default createDailyRoom behavior
       botRequestBody = {
@@ -39,7 +42,7 @@ export async function POST(request: Request) {
     }
 
     const response = await fetch(botStartUrl, {
-      method: 'POST',
+      method: "POST",
       headers,
       body: JSON.stringify(botRequestBody),
     });

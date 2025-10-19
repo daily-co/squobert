@@ -124,6 +124,45 @@ export const App = ({
 
   const hasTransportSelector = availableTransports.length > 1;
 
+  const handleEvalConnect = async () => {
+    if (!evalRoomUrl.trim() || !client) return;
+
+    try {
+      // Call the API with eval config
+      const response = await fetch("/api/start", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          eval: {
+            room_url: evalRoomUrl,
+            prompt: evalPrompt || undefined,
+            squobert_talks_first: squobertSpeaksFirst,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to start eval session");
+      }
+
+      const data = await response.json();
+
+      // Connect to the room using the client
+      await client.connect({
+        room_url: data.room_url,
+        token: data.token,
+      });
+
+      // Close the modal
+      setShowEvalModal(false);
+    } catch (error) {
+      console.error("Eval connection error:", error);
+      alert("Failed to connect in eval mode. Please check the console for details.");
+    }
+  };
+
   return (
     <div className="flex flex-col w-full h-full">
       <div className="relative flex-1 overflow-hidden">
@@ -391,14 +430,7 @@ export const App = ({
               <section className="control-section">
                 <button
                   type="button"
-                  onClick={() => {
-                    // TODO: Implement eval connection logic
-                    console.log("Eval connect:", {
-                      roomUrl: evalRoomUrl,
-                      prompt: evalPrompt,
-                      squobertSpeaksFirst,
-                    });
-                  }}
+                  onClick={handleEvalConnect}
                   disabled={!evalRoomUrl.trim()}
                   style={{
                     width: "100%",
