@@ -32,6 +32,9 @@ class LayeredDisplay(Static):
         circuit_file = Path(__file__).parent / "assets/circuit.txt"
         squobert_file = Path(__file__).parent / "assets/face.txt"
 
+        TARGET_WIDTH = 113
+        TARGET_HEIGHT = 31
+
         try:
             with open(circuit_file, "r", encoding="utf-8") as f:
                 circuit_lines = f.read().splitlines()
@@ -39,28 +42,25 @@ class LayeredDisplay(Static):
             with open(squobert_file, "r", encoding="utf-8") as f:
                 squobert_lines = f.read().splitlines()
 
-            # Ensure both have the same number of lines (35)
-            while len(circuit_lines) < 35:
-                circuit_lines.append(" " * 128)
-            while len(squobert_lines) < 35:
-                squobert_lines.append(" " * 128)
+            # Pad to target height if needed
+            while len(circuit_lines) < TARGET_HEIGHT:
+                circuit_lines.append("")
+            while len(squobert_lines) < TARGET_HEIGHT:
+                squobert_lines.append("")
 
             # Overlay squobert on circuit
             result_lines = []
-            for i in range(35):
-                circuit_line = circuit_lines[i] if i < len(circuit_lines) else " " * 128
-                squobert_line = (
-                    squobert_lines[i] if i < len(squobert_lines) else " " * 128
-                )
+            for i in range(TARGET_HEIGHT):
+                circuit_line = circuit_lines[i] if i < len(circuit_lines) else ""
+                squobert_line = squobert_lines[i] if i < len(squobert_lines) else ""
 
-                # Ensure lines are padded to at least 128 characters
-                circuit_line = circuit_line.ljust(128)
-                squobert_line = squobert_line.ljust(128)
+                # Pad to target width
+                circuit_line = circuit_line.ljust(TARGET_WIDTH)
+                squobert_line = squobert_line.ljust(TARGET_WIDTH)
 
                 # Overlay: use squobert character if non-space, otherwise use circuit
                 overlay_line = ""
-                max_len = max(len(circuit_line), len(squobert_line))
-                for j in range(max_len):
+                for j in range(TARGET_WIDTH):
                     c_char = circuit_line[j] if j < len(circuit_line) else " "
                     s_char = squobert_line[j] if j < len(squobert_line) else " "
 
@@ -321,14 +321,14 @@ class SquobertOS(App):
     }
 
     #main_container {
-        width: 128;
-        height: 33;
+        width: 113;
+        height: 31;
         align: center middle;
     }
 
     #squobert_face {
-        width: 128;
-        height: 33;
+        width: 113;
+        height: 31;
     }
 
     #title {
@@ -423,12 +423,17 @@ class SquobertOS(App):
             response = requests.get("http://localhost:8765/status", timeout=1)
             if response.status_code == 200:
                 data = response.json()
-                present = data.get("present", False)
-                face_count = data.get("face_count", 0)
-                if present:
-                    status_text = f"🟢 Presence: Active ({face_count} face{'s' if face_count != 1 else ''})"
+                available = data.get("available", True)
+
+                if not available:
+                    status_text = "🔴 Presence: Unavailable (OpenCV not installed)"
                 else:
-                    status_text = "🟡 Presence: No faces detected"
+                    present = data.get("present", False)
+                    face_count = data.get("face_count", 0)
+                    if present:
+                        status_text = f"🟢 Presence: Active ({face_count} face{'s' if face_count != 1 else ''})"
+                    else:
+                        status_text = "🟡 Presence: No faces detected"
             else:
                 status_text = "🔴 Presence: Error"
         except Exception:
