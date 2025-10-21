@@ -456,10 +456,16 @@ class SquobertOS(App):
             """Run uvicorn server in this thread"""
             # Redirect uvicorn logs to /dev/null to prevent them from displaying over the UI
             import logging
+            from loguru import logger
 
+            # Disable all uvicorn logging
             logging.getLogger("uvicorn").setLevel(logging.CRITICAL)
             logging.getLogger("uvicorn.access").setLevel(logging.CRITICAL)
             logging.getLogger("uvicorn.error").setLevel(logging.CRITICAL)
+
+            # Disable loguru logger used by presence server
+            logger.remove()  # Remove all handlers
+            logger.add(lambda _: None)  # Add a no-op handler
 
             config = uvicorn.Config(
                 presence_app,
