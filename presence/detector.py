@@ -9,7 +9,14 @@ import time
 from datetime import datetime, timezone
 from typing import Optional
 
-import cv2
+# Try to import cv2, but gracefully handle if it's not available
+try:
+    import cv2
+
+    CV2_AVAILABLE = True
+except ImportError:
+    CV2_AVAILABLE = False
+    cv2 = None
 
 
 class FaceDetector:
@@ -38,10 +45,11 @@ class FaceDetector:
         self.present_delay = present_delay
         self.absent_delay = absent_delay
 
-        self._cap: Optional[cv2.VideoCapture] = None
-        self._face_cascade: Optional[cv2.CascadeClassifier] = None
+        self._cap = None
+        self._face_cascade = None
         self._running = False
         self._task: Optional[asyncio.Task] = None
+        self._available = CV2_AVAILABLE
 
         # Current state
         self._present = False
@@ -96,6 +104,12 @@ class FaceDetector:
     async def start(self):
         """Start the face detection loop."""
         if self._running:
+            return
+
+        # Check if cv2 is available
+        if not CV2_AVAILABLE:
+            self._error = "OpenCV (cv2) is not available"
+            self._last_update = datetime.now(timezone.utc)
             return
 
         # Initialize the webcam
@@ -199,6 +213,7 @@ class FaceDetector:
             Dictionary with current presence status
         """
         return {
+            "available": self._available,
             "present": self._present,
             "face_count": self._face_count,
             "last_update": self._last_update.isoformat() if self._last_update else None,
