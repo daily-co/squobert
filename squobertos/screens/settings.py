@@ -3,19 +3,21 @@ Settings Screen for SquobertOS
 """
 
 from textual.app import ComposeResult
-from textual.containers import Container, Vertical, Horizontal
+from textual.containers import Container, Vertical, Horizontal, Grid
 from textual.widgets import Header, Footer, Button, Label, Input, Static
 from textual.screen import Screen
 from textual.binding import Binding
 
 from utils import launch_in_terminal
 
+import subprocess
+
 
 class ServerInputScreen(Screen):
     """Screen for configuring Squobert UI server URL"""
 
     BINDINGS = [
-        Binding("escape", "app.pop_screen", "Back"),
+        Binding("b", "app.pop_screen", "Back"),
     ]
 
     def compose(self) -> ComposeResult:
@@ -40,6 +42,7 @@ class ServerInputScreen(Screen):
     def on_mount(self) -> None:
         """Load current server URL"""
         # TODO: Load settings from config file
+        #
         pass
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
@@ -63,18 +66,39 @@ class SettingsScreen(Screen):
         Binding("escape", "app.pop_screen", "Back"),
     ]
 
+    CSS = """
+    #button_grid {
+        width: 50%;
+        height: 50%;
+        grid-size: 2 2;
+        grid-gutter: 1 2;
+        align: center middle;
+    }
+
+    #button_grid Button {
+        width: 100%;
+        height: 100%;
+    }
+
+    #status {
+        text-align: center;
+        margin-top: 1;
+    }
+    """
+
     def compose(self) -> ComposeResult:
         yield Header()
         yield Container(
-            Static("⚙️  System Settings", id="title"),
-            Vertical(
-                Button("📡 Wifi", id="wifi_btn", variant="primary"),
-                Button("🔊 Audio", id="audio_btn", variant="primary"),
-                Button("🖥️  Squobert UI", id="squobert_ui_btn", variant="primary"),
-                Button("Back", id="back_btn"),
-                Static("", id="status"),
-                id="settings_container",
+            Grid(
+                Button("[u]W[/u]ifi", id="wifi_btn", variant="primary"),
+                Button("[u]A[/u]udio", id="audio_btn", variant="primary"),
+                Button(
+                    "3: Squobert [u]U[/u]I", id="squobert_ui_btn", variant="primary"
+                ),
+                Button("[u]B[/u]ack", id="back_btn"),
+                id="button_grid",
             ),
+            Static("", id="status"),
             id="main_container",
         )
         yield Footer()

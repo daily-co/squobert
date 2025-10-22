@@ -16,9 +16,9 @@ class MainMenuScreen(Screen):
     """Main menu screen with configuration options"""
 
     BINDINGS = [
+        Binding("u", "launch_ui", "Squobert UI"),
+        Binding("s", "settings", "Settings"),
         Binding("q", "quit", "Quit"),
-        Binding("1", "squobert_ui", "Squobert UI"),
-        Binding("2", "settings", "Settings"),
     ]
 
     def compose(self) -> ComposeResult:
@@ -30,12 +30,12 @@ class MainMenuScreen(Screen):
                 id="top_buttons",
             ),
             Horizontal(
-                Button("1: Squobert UI", id="ui_btn", variant="success"),
+                Button("Squobert [u]U[/u]I", id="ui_btn", variant="success"),
                 Button(
-                    "2: Settings",
+                    "[u]S[/u]ettings",
                     id="settings_btn",
                 ),
-                Button("q: Quit", id="quit_btn"),
+                Button("[u]Q[/u]uit", id="quit_btn"),
                 id="bottom_buttons",
             ),
             id="main_container",
@@ -45,24 +45,11 @@ class MainMenuScreen(Screen):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         button_id = event.button.id
         if button_id == "settings_btn":
-            from screens.settings import SettingsScreen
-
-            self.app.push_screen(SettingsScreen())
+            self.action_settings()
         elif button_id == "ui_btn":
             self.action_launch_ui()
         elif button_id == "quit_btn":
             self.app.exit()
-
-    def action_configure_wifi(self) -> None:
-        """Open Network configuration screen"""
-        # Import here to avoid circular import
-        from screens.network import NetworkScreen
-
-        self.app.push_screen(NetworkScreen())
-
-    def action_audio(self) -> None:
-        """Configure audio"""
-        self.app.exit(message="shell")
 
     def action_launch_ui(self) -> None:
         """Launch Chromium in kiosk mode for AI interface"""
@@ -85,6 +72,13 @@ class MainMenuScreen(Screen):
 
             error_label = Label(f"Error: {e}")
             self.mount(error_label)
+
+    def action_settings(self) -> None:
+        """Open Settings screen"""
+        # Import here to avoid circular import
+        from screens.settings import SettingsScreen
+
+        self.app.push_screen(SettingsScreen())
 
     def action_quit(self) -> None:
         """Quit the application"""
