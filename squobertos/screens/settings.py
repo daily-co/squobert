@@ -9,6 +9,7 @@ from textual.screen import Screen
 from textual.binding import Binding
 
 from utils import launch_in_terminal
+from widgets.display import CircuitBackground
 
 import subprocess
 
@@ -71,12 +72,20 @@ class SettingsScreen(Screen):
     ]
 
     CSS = """
+    CircuitBackground {
+        layer: background;
+    }
+
+    #main_container {
+        align: center middle;
+        layer: overlay;
+    }
+
     #button_grid {
         width: 50%;
         height: 50%;
         grid-size: 2 2;
         grid-gutter: 1 2;
-        align: center middle;
     }
 
     #button_grid Button {
@@ -92,6 +101,7 @@ class SettingsScreen(Screen):
 
     def compose(self) -> ComposeResult:
         yield Header()
+        yield CircuitBackground()
         yield Container(
             Grid(
                 Button("[u]W[/u]ifi", id="wifi_btn", variant="primary"),

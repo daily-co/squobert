@@ -6,6 +6,45 @@ from pathlib import Path
 from textual.widgets import Static
 
 
+class CircuitBackground(Static):
+    """Widget to display just the circuit background"""
+
+    def render(self) -> str:
+        """Render the circuit background"""
+        circuit_file = Path(__file__).parent.parent / "assets/circuit.txt"
+
+        TARGET_WIDTH = 113
+        TARGET_HEIGHT = 31
+
+        try:
+            with open(circuit_file, "r", encoding="utf-8") as f:
+                circuit_lines = f.read().splitlines()
+
+            # Pad to target height if needed
+            while len(circuit_lines) < TARGET_HEIGHT:
+                circuit_lines.append("")
+
+            result_lines = []
+            for i in range(TARGET_HEIGHT):
+                circuit_line = circuit_lines[i] if i < len(circuit_lines) else ""
+                circuit_line = circuit_line.ljust(TARGET_WIDTH)
+
+                # Apply dark green color to circuit
+                colored_line = ""
+                for char in circuit_line:
+                    if char != " ":
+                        colored_line += f"[#004900]{char}[/]"
+                    else:
+                        colored_line += " "
+
+                result_lines.append(colored_line)
+
+            return "\n".join(result_lines)
+
+        except FileNotFoundError as e:
+            return f"File not found: {e}"
+
+
 class LayeredDisplay(Static):
     """Widget to display circuit background with squobert overlay"""
 
