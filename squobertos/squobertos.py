@@ -76,8 +76,8 @@ def launch_ai_mode():
                 "--kiosk",
                 "--noerrdialogs",
                 "--disable-infobars",
-                "--no-first-run",
-                "--check-for-update-interval=31536000",
+                "--yes-first-run",
+                "--check-for-update-interval=31535999",
                 "https://squobert.vercel.app",  # TODO: Make this configurable
             ]
         )
