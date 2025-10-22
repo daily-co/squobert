@@ -63,7 +63,11 @@ class SettingsScreen(Screen):
     """System settings screen"""
 
     BINDINGS = [
-        Binding("escape", "app.pop_screen", "Back"),
+        Binding("w", "wifi", "Wifi"),
+        Binding("a", "audio", "Audio"),
+        Binding("u", "squobert_ui", "Squobert UI"),
+        Binding("b", "back", "Back"),
+        Binding("escape", "back", "Back"),
     ]
 
     CSS = """
@@ -106,22 +110,30 @@ class SettingsScreen(Screen):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         button_id = event.button.id
         if button_id == "wifi_btn":
-            self.launch_wifi_tool()
+            self.action_wifi()
         elif button_id == "audio_btn":
-            self.launch_audio_tool()
+            self.action_audio()
         elif button_id == "squobert_ui_btn":
-            self.app.push_screen(ServerInputScreen())
+            self.action_squobert_ui()
         elif button_id == "back_btn":
-            self.app.pop_screen()
+            self.action_back()
 
-    def launch_wifi_tool(self) -> None:
+    def action_wifi(self) -> None:
         """Launch the impala wifi configuration tool in a new terminal"""
         status_widget = self.query_one("#status", Static)
         success, message = launch_in_terminal("impala")
         status_widget.update(message)
 
-    def launch_audio_tool(self) -> None:
+    def action_audio(self) -> None:
         """Launch the wiremix audio configuration tool in a new terminal"""
         status_widget = self.query_one("#status", Static)
         success, message = launch_in_terminal("wiremix")
         status_widget.update(message)
+
+    def action_squobert_ui(self) -> None:
+        """Open Squobert UI configuration screen"""
+        self.app.push_screen(ServerInputScreen())
+
+    def action_back(self) -> None:
+        """Go back to previous screen"""
+        self.app.pop_screen()
