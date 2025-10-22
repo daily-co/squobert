@@ -10,6 +10,7 @@ from textual.screen import Screen
 from textual.binding import Binding
 
 from widgets.display import LayeredDisplay
+from utils.config import get_config
 
 
 class MainMenuScreen(Screen):
@@ -54,13 +55,17 @@ class MainMenuScreen(Screen):
     def action_launch_ui(self) -> None:
         """Launch Chromium in kiosk mode for AI interface"""
         try:
+            # Get URL from config
+            config = get_config()
+            url = config.get("squobert_ui.url", "https://squobert.vercel.app")
+
             # Launch Chromium in the background without blocking
             # Using Popen instead of run so it doesn't wait for the browser to close
             subprocess.Popen(
                 [
                     "chromium",
                     "--kiosk",
-                    "https://squobert.vercel.app",  # TODO: Make this configurable
+                    url,
                 ],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,

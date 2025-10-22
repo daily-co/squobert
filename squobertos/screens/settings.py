@@ -9,6 +9,7 @@ from textual.screen import Screen
 from textual.binding import Binding
 
 from utils import launch_in_terminal
+from utils.config import get_config
 from widgets.display import CircuitBackground
 
 import subprocess
@@ -42,9 +43,10 @@ class ServerInputScreen(Screen):
 
     def on_mount(self) -> None:
         """Load current server URL"""
-        # TODO: Load settings from config file
-        #
-        pass
+        config = get_config()
+        current_url = config.get("squobert_ui.url", "https://squobert.vercel.app")
+        input_widget = self.query_one("#server_input", Input)
+        input_widget.value = current_url
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         button_id = event.button.id
@@ -55,8 +57,16 @@ class ServerInputScreen(Screen):
 
     def save_settings(self) -> None:
         """Save server URL to config file"""
+        input_widget = self.query_one("#server_input", Input)
         status_widget = self.query_one("#status", Static)
-        # TODO: Implement settings save
+
+        url = input_widget.value.strip()
+        if not url:
+            status_widget.update("❌ URL cannot be empty")
+            return
+
+        config = get_config()
+        config.set("squobert_ui.url", url)
         status_widget.update("✅ Server URL saved")
 
 
