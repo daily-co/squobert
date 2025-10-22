@@ -11,6 +11,7 @@ from textual.binding import Binding
 
 from widgets.display import LayeredDisplay
 from utils.config import get_config
+from utils.audio import get_default_audio_devices, get_device_display_name
 
 
 class MainMenuScreen(Screen):
@@ -26,9 +27,12 @@ class MainMenuScreen(Screen):
         yield Header()
         yield Container(
             LayeredDisplay(id="squobert_face"),
-            Horizontal(
+            Container(
                 Static("🔴 Presence: Starting...", id="presence_status"),
-                id="top_buttons",
+                Static(
+                    "🎤 Input: Loading... | 🔊 Output: Loading...", id="audio_status"
+                ),
+                id="status_lines",
             ),
             Horizontal(
                 Button("Squobert [u]U[/u]I", id="ui_btn", variant="success"),
@@ -42,6 +46,32 @@ class MainMenuScreen(Screen):
             id="main_container",
         )
         yield Footer()
+
+    def on_mount(self) -> None:
+        """Initialize the screen"""
+        # Load initial audio status
+        self.update_audio_status()
+
+    def update_audio_status(self) -> None:
+        """Update the audio device status display"""
+        try:
+            input_id, input_name, output_id, output_name = get_default_audio_devices()
+
+            # Get user-friendly names
+            input_display = get_device_display_name(input_name)
+            output_display = get_device_display_name(output_name)
+
+            status_text = f"🎤 Input: {input_display} | 🔊 Output: {output_display}"
+
+            audio_status = self.query_one("#audio_status", Static)
+            audio_status.update(status_text)
+        except Exception:
+            # If we can't get audio status, show error
+            try:
+                audio_status = self.query_one("#audio_status", Static)
+                audio_status.update("🎤 Input: Unknown | 🔊 Output: Unknown")
+            except Exception:
+                pass
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         button_id = event.button.id

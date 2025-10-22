@@ -29,11 +29,18 @@ Screen {
     background: $background 50%;
 }
 
-#top_buttons {
+#status_lines {
     layer: overlay;
     offset: 0 -4;
     width: 80;
-    height: 5;
+    height: auto;
+}
+
+#status_lines Static {
+    width: 100%;
+    height: auto;
+    text-align: left;
+    color: $accent;
 }
 
 #bottom_buttons {
@@ -43,7 +50,7 @@ Screen {
     height: 5;
 }
 
-#top_buttons Button, #bottom_buttons Button {
+#bottom_buttons Button {
     width: 1fr;
     height: 5;
     min-height: 1;
@@ -82,13 +89,6 @@ Input {
 #status {
     margin-top: 1;
     text-align: center;
-    color: $accent;
-}
-
-#presence_status {
-    width: 100%;
-    height: auto;
-    text-align: left;
     color: $accent;
 }
 """
