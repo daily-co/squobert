@@ -84,6 +84,7 @@ class SettingsScreen(Screen):
     #button_grid {
         width: 50%;
         height: 50%;
+        layer: overlay;
         grid-size: 2 2;
         grid-gutter: 1 2;
     }
@@ -101,14 +102,12 @@ class SettingsScreen(Screen):
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield CircuitBackground()
         yield Container(
+            CircuitBackground(),
             Grid(
                 Button("[u]W[/u]ifi", id="wifi_btn", variant="primary"),
                 Button("[u]A[/u]udio", id="audio_btn", variant="primary"),
-                Button(
-                    "3: Squobert [u]U[/u]I", id="squobert_ui_btn", variant="primary"
-                ),
+                Button("Squobert [u]U[/u]I", id="squobert_ui_btn", variant="primary"),
                 Button("[u]B[/u]ack", id="back_btn"),
                 id="button_grid",
             ),
