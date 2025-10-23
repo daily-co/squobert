@@ -30,7 +30,19 @@ def launch_in_terminal(command: str) -> tuple[bool, str]:
     """
     # List of terminal emulators to try, in order of preference
     terminal_emulators = [
-        ["xterm", "-e", command],  # the Pi
+        [
+            "alacritty",
+            "-o",
+            "window.decorations=None",
+            "-o",
+            "window.dimensions.columns=80",
+            "-o",
+            "window.dimensions.lines=20",
+            "-e",
+            "bash",
+            "-c",
+            command,
+        ],
         ["ghostty", "-e", command],  # selfish, for Chad
         # And some fallbacks
         ["x-terminal-emulator", "-e", command],
