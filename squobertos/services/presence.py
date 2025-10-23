@@ -32,30 +32,52 @@ class PresenceService:
 
         def run_server():
             """Run uvicorn server in this thread"""
-            # Redirect uvicorn logs to /dev/null to prevent them from displaying over the UI
-            import logging
-            from loguru import logger
+            # Create log directory and file
+            log_dir = Path(__file__).parent.parent / "logs"
+            log_dir.mkdir(exist_ok=True)
+            log_file = log_dir / "presence_detector.log"
 
-            # Disable all uvicorn logging
-            logging.getLogger("uvicorn").setLevel(logging.CRITICAL)
-            logging.getLogger("uvicorn.access").setLevel(logging.CRITICAL)
-            logging.getLogger("uvicorn.error").setLevel(logging.CRITICAL)
+            # Open log file in write mode (overwrite each time)
+            with open(log_file, "w") as log:
+                # Redirect stdout and stderr to log file
+                import sys as pysys
 
-            # Disable loguru logger used by presence server
-            logger.remove()  # Remove all handlers
-            logger.add(lambda _: None)  # Add a no-op handler
+                old_stdout = pysys.stdout
+                old_stderr = pysys.stderr
+                pysys.stdout = log
+                pysys.stderr = log
 
-            config = uvicorn.Config(
-                presence_app,
-                host="0.0.0.0",
-                port=8765,
-                log_level="critical",
-                loop="asyncio",
-            )
-            self.server = uvicorn.Server(config)
+                try:
+                    # Redirect uvicorn logs to the log file
+                    import logging
+                    from loguru import logger
 
-            # Run the server
-            asyncio.run(self.server.serve())
+                    # Configure uvicorn logging to use the log file
+                    logging.basicConfig(
+                        stream=log,
+                        level=logging.INFO,
+                        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+                    )
+
+                    # Configure loguru logger to use the log file
+                    logger.remove()  # Remove all handlers
+                    logger.add(log, level="INFO")
+
+                    config = uvicorn.Config(
+                        presence_app,
+                        host="0.0.0.0",
+                        port=8765,
+                        log_level="info",
+                        loop="asyncio",
+                    )
+                    self.server = uvicorn.Server(config)
+
+                    # Run the server
+                    asyncio.run(self.server.serve())
+                finally:
+                    # Restore stdout and stderr
+                    pysys.stdout = old_stdout
+                    pysys.stderr = old_stderr
 
         self.server_thread = threading.Thread(target=run_server, daemon=True)
         self.server_thread.start()
