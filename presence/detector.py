@@ -6,6 +6,8 @@ This module provides async-friendly face detection using OpenCV's Haar Cascade c
 
 import asyncio
 import time
+import os
+from pathlib import Path
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -17,6 +19,47 @@ try:
 except ImportError:
     CV2_AVAILABLE = False
     cv2 = None
+
+
+def find_cascade_file(
+    cascade_name: str = "haarcascade_frontalface_default.xml",
+) -> Optional[str]:
+    """
+    Find the Haar Cascade XML file in common locations.
+
+    Args:
+        cascade_name: Name of the cascade file to find
+
+    Returns:
+        Path to the cascade file, or None if not found
+    """
+    if not CV2_AVAILABLE:
+        return None
+
+    # List of common locations to search
+    search_paths = [
+        # OpenCV's cv2.data.haarcascades path (most common)
+        cv2.data.haarcascades + cascade_name if hasattr(cv2, "data") else None,
+        # Common system paths on Linux
+        f"/usr/share/opencv4/haarcascades/{cascade_name}",
+        f"/usr/local/share/opencv4/haarcascades/{cascade_name}",
+        f"/usr/share/opencv/haarcascades/{cascade_name}",
+        f"/usr/local/share/opencv/haarcascades/{cascade_name}",
+        # Raspberry Pi specific paths
+        f"/usr/share/opencv/data/haarcascades/{cascade_name}",
+        f"/usr/local/share/OpenCV/haarcascades/{cascade_name}",
+        # Conda/virtual environment paths
+        os.path.join(os.path.dirname(cv2.__file__), "data", cascade_name)
+        if cv2
+        else None,
+    ]
+
+    # Filter out None values and check each path
+    for path in search_paths:
+        if path and os.path.exists(path):
+            return path
+
+    return None
 
 
 class FaceDetector:
@@ -118,13 +161,22 @@ class FaceDetector:
             raise RuntimeError(f"Could not open camera {self.camera_index}")
 
         # Load the Haar Cascade for face detection
-        cascade_path = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+        cascade_path = find_cascade_file("haarcascade_frontalface_default.xml")
+        if not cascade_path:
+            self._cap.release()
+            self._cap = None
+            raise RuntimeError(
+                "Could not find face detection cascade file in common locations"
+            )
+
         self._face_cascade = cv2.CascadeClassifier(cascade_path)
 
         if self._face_cascade.empty():
             self._cap.release()
             self._cap = None
-            raise RuntimeError("Could not load face detection cascade")
+            raise RuntimeError(
+                f"Could not load face detection cascade from {cascade_path}"
+            )
 
         self._running = True
         self._task = asyncio.create_task(self._detection_loop())
@@ -251,12 +303,22 @@ def show_camera_preview(camera_index: int = 0, window_title: str = "Camera Previ
         return 1
 
     # Load the Haar Cascade for face detection
-    face_cascade = cv2.CascadeClassifier(
-        cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
-    )
+    cascade_path = find_cascade_file("haarcascade_frontalface_default.xml")
+    if not cascade_path:
+        print(
+            "Error: Could not find face detection cascade file in common locations",
+            file=sys.stderr,
+        )
+        cap.release()
+        return 1
+
+    face_cascade = cv2.CascadeClassifier(cascade_path)
 
     if face_cascade.empty():
-        print("Error: Could not load face detection cascade", file=sys.stderr)
+        print(
+            f"Error: Could not load face detection cascade from {cascade_path}",
+            file=sys.stderr,
+        )
         cap.release()
         return 1
 
