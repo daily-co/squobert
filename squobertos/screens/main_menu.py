@@ -52,6 +52,12 @@ class MainMenuScreen(Screen):
         self.update_audio_status()
         self.update_network_status()
 
+    def on_screen_resume(self) -> None:
+        """Called when returning to this screen from another screen"""
+        # Refresh status displays when returning from settings
+        self.update_audio_status()
+        self.update_network_status()
+
     def update_audio_status(self) -> None:
         """Update the audio device status display"""
         try:
