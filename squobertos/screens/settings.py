@@ -113,10 +113,11 @@ class SettingsScreen(Screen):
     }
 
     #button_grid {
+        margin-top: 2;
         width: 80;
-        height: 29;
+        height: 17;
         layer: overlay;
-        grid-size: 3 4;
+        grid-size: 3 3;
         grid-gutter: 1 2;
     }
 
@@ -126,8 +127,11 @@ class SettingsScreen(Screen):
     }
 
     #status {
+        dock: bottom;
         text-align: center;
-        margin-top: 25;
+        height: 1;
+        background: $surface;
+        color: $text;
     }
     """
 
@@ -158,9 +162,9 @@ class SettingsScreen(Screen):
                 Button("[u]B[/u]ack", id="back_btn"),
                 id="button_grid",
             ),
-            Static("", id="status"),
             id="main_container",
         )
+        yield Static("", id="status")
         yield Footer()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
@@ -251,7 +255,7 @@ class SettingsScreen(Screen):
     def action_camera_preview(self) -> None:
         """Open camera preview screen"""
 
-        success, message = launch_in_terminal("ffplay /dev/video0")
+        success, message = launch_in_terminal("ffplay", "/dev/video0")
         status_widget = self.query_one("#status", Static)
         status_widget.update(message)
 
@@ -291,7 +295,7 @@ class SettingsScreen(Screen):
         """Update code from git and reboot the system"""
         try:
             success, message = launch_in_terminal(
-                "bash -c 'cd ~/Code/squobert && git pull && reboot'"
+                "bash", "-c", "cd ~/Code/squobert && git pull && reboot"
             )
             status_widget = self.query_one("#status", Static)
             status_widget.update(message if success else "✗ Failed to launch update")
