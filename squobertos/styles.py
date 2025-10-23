@@ -9,13 +9,13 @@ Screen {
 
 #main_container {
     width: 113;
-    height: 31;
+    height: 30;
     align: center middle;
 }
 
 #squobert_face {
     width: 113;
-    height: 31;
+    height: 30;
 }
 
 #title {

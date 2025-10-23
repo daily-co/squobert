@@ -4,9 +4,22 @@ SquobertOS - Configuration TUI for Squobert
 A terminal-based interface for configuring Squobert at new locations
 """
 
+import os
+import sys
 import subprocess
 from textual.app import App
 from textual.widgets import Static
+
+# Suppress GStreamer and OpenCV warnings before any imports
+os.environ["OPENCV_LOG_LEVEL"] = "OFF"
+os.environ["OPENCV_VIDEOIO_DEBUG"] = "0"
+os.environ["GST_DEBUG"] = "0"
+os.environ["GSTREAMER_DEBUG"] = "0"
+
+# Redirect stderr to suppress C-level warnings
+import warnings
+
+warnings.filterwarnings("ignore")
 
 from styles import SQUOBERTOS_CSS
 from screens.main_menu import MainMenuScreen

@@ -77,7 +77,9 @@ class SettingsScreen(Screen):
         Binding("w", "wifi", "Wifi"),
         Binding("a", "audio", "Audio"),
         Binding("u", "squobert_ui", "Squobert UI"),
+        Binding("t", "terminal", "Terminal"),
         Binding("b", "back", "Back"),
+        Binding("q", "back", "Back"),
         Binding("escape", "back", "Back"),
     ]
 
@@ -92,10 +94,10 @@ class SettingsScreen(Screen):
     }
 
     #button_grid {
-        width: 50%;
-        height: 50%;
+        width: 80;
+        height: 7;
         layer: overlay;
-        grid-size: 2 2;
+        grid-size: 5 1;
         grid-gutter: 1 2;
     }
 
@@ -118,10 +120,10 @@ class SettingsScreen(Screen):
                 Button("[u]W[/u]ifi", id="wifi_btn", variant="primary"),
                 Button("[u]A[/u]udio", id="audio_btn", variant="primary"),
                 Button("Squobert [u]U[/u]I", id="squobert_ui_btn", variant="primary"),
+                Button("[u]T[/u]erminal", id="terminal_btn", variant="warning"),
                 Button("[u]B[/u]ack", id="back_btn"),
                 id="button_grid",
             ),
-            Static("", id="status"),
             id="main_container",
         )
         yield Footer()
@@ -134,6 +136,8 @@ class SettingsScreen(Screen):
             self.action_audio()
         elif button_id == "squobert_ui_btn":
             self.action_squobert_ui()
+        elif button_id == "terminal_btn":
+            self.action_terminal()
         elif button_id == "back_btn":
             self.action_back()
 
@@ -152,6 +156,12 @@ class SettingsScreen(Screen):
     def action_squobert_ui(self) -> None:
         """Open Squobert UI configuration screen"""
         self.app.push_screen(ServerInputScreen())
+
+    def action_terminal(self) -> None:
+        """Launch a new terminal"""
+        status_widget = self.query_one("#status", Static)
+        success, message = launch_in_terminal("bash")
+        status_widget.update(message)
 
     def action_back(self) -> None:
         """Go back to previous screen"""

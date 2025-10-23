@@ -39,8 +39,6 @@ def launch_in_terminal(command: str) -> tuple[bool, str]:
             "-o",
             "window.dimensions.lines=20",
             "-e",
-            "bash",
-            "-c",
             command,
         ],
         ["ghostty", "-e", command],  # selfish, for Chad
