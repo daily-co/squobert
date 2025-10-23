@@ -122,6 +122,7 @@ class SettingsScreen(Screen):
                 Button("[u]B[/u]ack", id="back_btn"),
                 id="button_grid",
             ),
+            Static("", id="status"),
             id="main_container",
         )
         yield Footer()
@@ -141,15 +142,27 @@ class SettingsScreen(Screen):
 
     def action_wifi(self) -> None:
         """Launch the impala wifi configuration tool in a new terminal"""
-        status_widget = self.query_one("#status", Static)
-        success, message = launch_in_terminal("impala")
-        status_widget.update(message)
+        try:
+            success, message = launch_in_terminal("impala")
+            status_widget = self.query_one("#status", Static)
+            status_widget.update(message)
+        except Exception as e:
+            # Log error but don't crash
+            import sys
+
+            print(f"Error in action_wifi: {e}", file=sys.stderr)
 
     def action_audio(self) -> None:
         """Launch the wiremix audio configuration tool in a new terminal"""
-        status_widget = self.query_one("#status", Static)
-        success, message = launch_in_terminal("wiremix")
-        status_widget.update(message)
+        try:
+            success, message = launch_in_terminal("wiremix")
+            status_widget = self.query_one("#status", Static)
+            status_widget.update(message)
+        except Exception as e:
+            # Log error but don't crash
+            import sys
+
+            print(f"Error in action_audio: {e}", file=sys.stderr)
 
     def action_squobert_ui(self) -> None:
         """Open Squobert UI configuration screen"""
@@ -157,9 +170,15 @@ class SettingsScreen(Screen):
 
     def action_terminal(self) -> None:
         """Launch a new terminal"""
-        status_widget = self.query_one("#status", Static)
-        success, message = launch_in_terminal("bash")
-        status_widget.update(message)
+        try:
+            success, message = launch_in_terminal("bash")
+            status_widget = self.query_one("#status", Static)
+            status_widget.update(message)
+        except Exception as e:
+            # Log error but don't crash
+            import sys
+
+            print(f"Error in action_terminal: {e}", file=sys.stderr)
 
     def action_back(self) -> None:
         """Go back to previous screen"""
