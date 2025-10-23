@@ -107,7 +107,7 @@ class SettingsScreen(Screen):
 
     #status {
         text-align: center;
-        margin-top: 1;
+        margin-top: 8;
     }
     """
 

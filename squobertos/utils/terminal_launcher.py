@@ -37,7 +37,7 @@ def launch_in_terminal(command: str) -> tuple[bool, str]:
             "-o",
             "window.dimensions.columns=80",
             "-o",
-            "window.dimensions.lines=20",
+            "window.dimensions.lines=22",
             "-e",
             command,
         ],
