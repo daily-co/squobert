@@ -6,6 +6,7 @@ import sys
 import threading
 import asyncio
 from pathlib import Path
+import time
 
 # Import presence detection server
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "presence"))
@@ -18,12 +19,16 @@ class PresenceService:
 
     def __init__(self):
         self.server_thread = None
+        self.server = None
         self.running = False
+        self._stop_event = threading.Event()
 
     def start(self) -> None:
         """Start the presence detection server in a background thread"""
         if self.running:
             return
+
+        self._stop_event.clear()
 
         def run_server():
             """Run uvicorn server in this thread"""
@@ -47,17 +52,33 @@ class PresenceService:
                 log_level="critical",
                 loop="asyncio",
             )
-            server = uvicorn.Server(config)
-            asyncio.run(server.serve())
+            self.server = uvicorn.Server(config)
+
+            # Run the server
+            asyncio.run(self.server.serve())
 
         self.server_thread = threading.Thread(target=run_server, daemon=True)
         self.server_thread.start()
         self.running = True
 
+        # Give the server a moment to start
+        time.sleep(0.5)
+
     def stop(self) -> None:
         """Stop the presence detection server"""
-        # The daemon thread will be automatically cleaned up when the app exits
+        if not self.running:
+            return
+
         self.running = False
+
+        # Signal the server to stop
+        if self.server:
+            self.server.should_exit = True
+
+        self._stop_event.set()
+
+        # Give it a moment to shut down gracefully
+        time.sleep(1)
 
     def is_running(self) -> bool:
         """Check if the presence server is running"""

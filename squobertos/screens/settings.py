@@ -92,6 +92,7 @@ class SettingsScreen(Screen):
         Binding("w", "wifi", "Wifi"),
         Binding("a", "audio", "Audio"),
         Binding("u", "squobert_ui", "URLs"),
+        Binding("p", "presence", "Presence"),
         Binding("c", "camera_preview", "Camera"),
         Binding("n", "network_test", "Network Test"),
         Binding("t", "terminal", "Terminal"),
@@ -113,9 +114,9 @@ class SettingsScreen(Screen):
 
     #button_grid {
         width: 80;
-        height: 17;
+        height: 29;
         layer: overlay;
-        grid-size: 3 3;
+        grid-size: 3 4;
         grid-gutter: 1 2;
     }
 
@@ -131,12 +132,21 @@ class SettingsScreen(Screen):
     """
 
     def compose(self) -> ComposeResult:
+        # Get presence detector state
+        config = get_config()
+        enabled = config.get("presence.enabled", True)
+        presence_label = (
+            "[u]P[/u]resence Enabled" if enabled else "[u]P[/u]resence Disabled"
+        )
+        presence_variant = "success" if enabled else "error"
+
         yield Container(
             CircuitBackground(),
             Grid(
                 Button("[u]W[/u]ifi", id="wifi_btn", variant="primary"),
                 Button("[u]A[/u]udio", id="audio_btn", variant="primary"),
                 Button("[u]U[/u]RLs", id="squobert_ui_btn", variant="primary"),
+                Button(presence_label, id="presence_btn", variant=presence_variant),
                 Button(
                     "[u]C[/u]amera Preview", id="camera_preview_btn", variant="primary"
                 ),
@@ -161,6 +171,8 @@ class SettingsScreen(Screen):
             self.action_audio()
         elif button_id == "squobert_ui_btn":
             self.action_squobert_ui()
+        elif button_id == "presence_btn":
+            self.action_presence()
         elif button_id == "camera_preview_btn":
             self.action_camera_preview()
         elif button_id == "network_test_btn":
@@ -199,6 +211,42 @@ class SettingsScreen(Screen):
     def action_squobert_ui(self) -> None:
         """Open URL configuration screen"""
         self.app.push_screen(ServerInputScreen())
+
+    def action_presence(self) -> None:
+        """Toggle presence detector on/off"""
+        try:
+            config = get_config()
+            enabled = config.get("presence.enabled", True)
+
+            # Toggle the state
+            new_state = not enabled
+            config.set("presence.enabled", new_state)
+
+            # Update the button label and variant
+            presence_btn = self.query_one("#presence_btn", Button)
+            if new_state:
+                presence_btn.label = "[u]P[/u]resence Detector Enabled"
+                presence_btn.variant = "success"
+                status_message = "[green]✓ Presence detector enabled[/green]"
+                # Start the presence service
+                if hasattr(self.app, "presence_service"):
+                    self.app.presence_service.start()
+            else:
+                presence_btn.label = "[u]P[/u]resence Detector Disabled"
+                presence_btn.variant = "error"
+                status_message = "[orange]✓ Presence detector disabled[/orange]"
+                # Stop the presence service
+                if hasattr(self.app, "presence_service"):
+                    self.app.presence_service.stop()
+
+            # Show status message
+            status_widget = self.query_one("#status", Static)
+            status_widget.update(status_message)
+
+        except Exception as e:
+            status_widget = self.query_one("#status", Static)
+            status_widget.update(f"[red]✗ Error: {str(e)}[/red]")
+            print(f"Error toggling presence detector: {e}", file=sys.stderr)
 
     def action_camera_preview(self) -> None:
         """Open camera preview screen"""

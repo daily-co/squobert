@@ -37,9 +37,17 @@ class SquobertOS(App):
 
     def on_mount(self) -> None:
         """Set up the application"""
+        from utils.config import get_config
+
         self.title = "SquobertOS"
         self.sub_title = "Configuration Interface"
-        self.presence_service.start()
+
+        # Only start presence service if enabled in config
+        config = get_config()
+        enabled = config.get("presence.enabled", True)
+        if enabled:
+            self.presence_service.start()
+
         self.push_screen(MainMenuScreen())
         # Set up periodic presence status check
         self.set_interval(2.0, self.update_presence_status)
@@ -47,34 +55,43 @@ class SquobertOS(App):
     def update_presence_status(self) -> None:
         """Update the presence status indicator"""
         import requests
+        from utils.config import get_config
 
         status_text = ""
         status_color = "red"  # Default to red
 
-        try:
-            response = requests.get("http://localhost:8765/status", timeout=1)
-            if response.status_code == 200:
-                data = response.json()
-                available = data.get("available", True)
+        # Check if presence detector is enabled in config
+        config = get_config()
+        enabled = config.get("presence.enabled", True)
 
-                if not available:
-                    status_text = "● Presence: Unavailable (OpenCV not installed)"
-                    status_color = "red"
-                else:
-                    present = data.get("present", False)
-                    face_count = data.get("face_count", 0)
-                    if present:
-                        status_text = f"● Presence: Active ({face_count} face{'s' if face_count != 1 else ''})"
-                        status_color = "green"
+        if not enabled:
+            status_text = "● Presence: Disabled"
+            status_color = "gray"
+        else:
+            try:
+                response = requests.get("http://localhost:8765/status", timeout=1)
+                if response.status_code == 200:
+                    data = response.json()
+                    available = data.get("available", True)
+
+                    if not available:
+                        status_text = "● Presence: Unavailable (OpenCV not installed)"
+                        status_color = "red"
                     else:
-                        status_text = "● Presence: No faces detected"
-                        status_color = "orange"
-            else:
-                status_text = "● Presence: Error"
-                status_color = "red"
-        except Exception:
-            status_text = "● Presence: Starting..."
-            status_color = "orange"
+                        present = data.get("present", False)
+                        face_count = data.get("face_count", 0)
+                        if present:
+                            status_text = f"● Presence: Active ({face_count} face{'s' if face_count != 1 else ''})"
+                            status_color = "green"
+                        else:
+                            status_text = "● Presence: No faces detected"
+                            status_color = "orange"
+                else:
+                    status_text = "● Presence: Error"
+                    status_color = "red"
+            except Exception:
+                status_text = "● Presence: Starting..."
+                status_color = "orange"
 
         # Update the status widget if it exists and we're on the main screen
         try:
