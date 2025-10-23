@@ -55,18 +55,18 @@ class SquobertOS(App):
                 available = data.get("available", True)
 
                 if not available:
-                    status_text = "🔴 Presence: Unavailable (OpenCV not installed)"
+                    status_text = "● Presence: Unavailable (OpenCV not installed)"
                 else:
                     present = data.get("present", False)
                     face_count = data.get("face_count", 0)
                     if present:
-                        status_text = f"🟢 Presence: Active ({face_count} face{'s' if face_count != 1 else ''})"
+                        status_text = f"● Presence: Active ({face_count} face{'s' if face_count != 1 else ''})"
                     else:
-                        status_text = "🟡 Presence: No faces detected"
+                        status_text = "● Presence: No faces detected"
             else:
-                status_text = "🔴 Presence: Error"
+                status_text = "● Presence: Error"
         except Exception:
-            status_text = "🔴 Presence: Starting..."
+            status_text = "● Presence: Starting..."
 
         # Update the status widget if it exists and we're on the main screen
         try:

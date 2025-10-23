@@ -12,6 +12,7 @@ from textual.binding import Binding
 from widgets.display import LayeredDisplay
 from utils.config import get_config
 from utils.audio import get_default_audio_devices, get_device_display_name
+from utils.network import get_wifi_info, format_network_status
 
 
 class MainMenuScreen(Screen):
@@ -24,14 +25,12 @@ class MainMenuScreen(Screen):
     ]
 
     def compose(self) -> ComposeResult:
-        yield Header()
         yield Container(
             LayeredDisplay(id="squobert_face"),
             Container(
-                Static("🔴 Presence: Starting...", id="presence_status"),
-                Static(
-                    "🎤 Input: Loading... | 🔊 Output: Loading...", id="audio_status"
-                ),
+                Static("● Presence: Starting...", id="presence_status"),
+                Static("♪ Input: Loading... | ♫ Output: Loading...", id="audio_status"),
+                Static("◉ Network: Loading...", id="network_status"),
                 id="status_lines",
             ),
             Horizontal(
@@ -49,8 +48,9 @@ class MainMenuScreen(Screen):
 
     def on_mount(self) -> None:
         """Initialize the screen"""
-        # Load initial audio status
+        # Load initial status displays
         self.update_audio_status()
+        self.update_network_status()
 
     def update_audio_status(self) -> None:
         """Update the audio device status display"""
@@ -61,7 +61,7 @@ class MainMenuScreen(Screen):
             input_display = get_device_display_name(input_name)
             output_display = get_device_display_name(output_name)
 
-            status_text = f"🎤 Input: {input_display} | 🔊 Output: {output_display}"
+            status_text = f"♪ Input: {input_display} | ♫ Output: {output_display}"
 
             audio_status = self.query_one("#audio_status", Static)
             audio_status.update(status_text)
@@ -69,7 +69,23 @@ class MainMenuScreen(Screen):
             # If we can't get audio status, show error
             try:
                 audio_status = self.query_one("#audio_status", Static)
-                audio_status.update("🎤 Input: Unknown | 🔊 Output: Unknown")
+                audio_status.update("♪ Input: Unknown | ♫ Output: Unknown")
+            except Exception:
+                pass
+
+    def update_network_status(self) -> None:
+        """Update the network status display"""
+        try:
+            ssid, ip = get_wifi_info()
+            status_text = format_network_status(ssid, ip)
+
+            network_status = self.query_one("#network_status", Static)
+            network_status.update(status_text)
+        except Exception:
+            # If we can't get network status, show error
+            try:
+                network_status = self.query_one("#network_status", Static)
+                network_status.update("◉ Network: Unknown")
             except Exception:
                 pass
 

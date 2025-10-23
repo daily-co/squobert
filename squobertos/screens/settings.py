@@ -23,9 +23,8 @@ class ServerInputScreen(Screen):
     ]
 
     def compose(self) -> ComposeResult:
-        yield Header()
         yield Container(
-            Static("🌐 Squobert UI Configuration", id="title"),
+            Static("◉ Squobert UI Configuration", id="title"),
             Vertical(
                 Label("Squobert UI URL:"),
                 Input(placeholder="http://localhost:3000", id="server_input"),
@@ -62,12 +61,12 @@ class ServerInputScreen(Screen):
 
         url = input_widget.value.strip()
         if not url:
-            status_widget.update("❌ URL cannot be empty")
+            status_widget.update("✗ URL cannot be empty")
             return
 
         config = get_config()
         config.set("squobert_ui.url", url)
-        status_widget.update("✅ Server URL saved")
+        status_widget.update("✓ Server URL saved")
 
 
 class SettingsScreen(Screen):
@@ -113,7 +112,6 @@ class SettingsScreen(Screen):
     """
 
     def compose(self) -> ComposeResult:
-        yield Header()
         yield Container(
             CircuitBackground(),
             Grid(

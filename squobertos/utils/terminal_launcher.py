@@ -26,7 +26,7 @@ def launch_in_terminal(command: str) -> tuple[bool, str]:
     Example:
         >>> success, message = launch_in_terminal("impala")
         >>> if success:
-        ...     print(message)  # "✅ Launched command successfully"
+        ...     print(message)  # "✓ Launched command successfully"
     """
     # List of terminal emulators to try, in order of preference
     terminal_emulators = [
@@ -59,13 +59,13 @@ def launch_in_terminal(command: str) -> tuple[bool, str]:
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             )
-            return True, f"✅ Launched {command} successfully"
+            return True, f"✓ Launched {command} successfully"
         except FileNotFoundError:
             # This terminal emulator is not available, try the next one
             continue
         except Exception as e:
             # Unexpected error occurred
-            return False, f"❌ Error launching {command}: {e}"
+            return False, f"✗ Error launching {command}: {e}"
 
     # None of the terminal emulators were found
-    return False, f"❌ Could not find a terminal emulator to launch {command}"
+    return False, f"✗ Could not find a terminal emulator to launch {command}"
