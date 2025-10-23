@@ -220,3 +220,105 @@ class FaceDetector:
             "error": self._error,
             "camera_index": self.camera_index,
         }
+
+
+def show_camera_preview(camera_index: int = 0, window_title: str = "Camera Preview"):
+    """
+    Show a live camera preview window with face detection.
+
+    This is a blocking function that displays the camera feed in an OpenCV window.
+    Press 'q' to close the window.
+
+    Args:
+        camera_index: Camera device index (default: 0)
+        window_title: Title for the preview window (default: "Camera Preview")
+
+    Returns:
+        0 on success, 1 on error
+    """
+    import sys
+
+    if not CV2_AVAILABLE:
+        print("Error: OpenCV (cv2) is not available", file=sys.stderr)
+        return 1
+
+    # Initialize the webcam
+    print(f"Initializing camera {camera_index}...")
+    cap = cv2.VideoCapture(camera_index)
+
+    if not cap.isOpened():
+        print(f"Error: Could not open camera {camera_index}", file=sys.stderr)
+        return 1
+
+    # Load the Haar Cascade for face detection
+    face_cascade = cv2.CascadeClassifier(
+        cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+    )
+
+    if face_cascade.empty():
+        print("Error: Could not load face detection cascade", file=sys.stderr)
+        cap.release()
+        return 1
+
+    print(f"Camera preview started. Press 'q' to quit.")
+
+    try:
+        while True:
+            # Read frame from webcam
+            ret, frame = cap.read()
+
+            if not ret:
+                print("Error: Failed to capture frame", file=sys.stderr)
+                break
+
+            # Detect faces
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            faces = face_cascade.detectMultiScale(
+                gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30)
+            )
+
+            # Draw rectangles around faces
+            for x, y, w, h in faces:
+                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+            # Display the frame
+            cv2.imshow(window_title, frame)
+
+            # Break on 'q' key
+            if cv2.waitKey(1) & 0xFF == ord("q"):
+                print("\nStopping...")
+                break
+
+    except KeyboardInterrupt:
+        print("\n\nStopping...")
+
+    finally:
+        # Clean up
+        cap.release()
+        cv2.destroyAllWindows()
+        print("Camera released.")
+
+    return 0
+
+
+if __name__ == "__main__":
+    import argparse
+    import sys
+
+    parser = argparse.ArgumentParser(description="Camera preview with face detection")
+    parser.add_argument(
+        "--camera", type=int, default=0, help="Camera device index (default: 0)"
+    )
+    parser.add_argument(
+        "--show",
+        action="store_true",
+        help="Show camera preview (for compatibility with face_detector.py)",
+    )
+
+    args = parser.parse_args()
+
+    sys.exit(
+        show_camera_preview(
+            camera_index=args.camera, window_title="Squobert Camera Preview"
+        )
+    )

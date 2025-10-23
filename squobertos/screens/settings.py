@@ -92,6 +92,7 @@ class SettingsScreen(Screen):
         Binding("w", "wifi", "Wifi"),
         Binding("a", "audio", "Audio"),
         Binding("u", "squobert_ui", "URLs"),
+        Binding("c", "camera_preview", "Camera"),
         Binding("n", "network_test", "Network Test"),
         Binding("t", "terminal", "Terminal"),
         Binding("r", "update_and_reboot", "Update and Reboot"),
@@ -112,9 +113,9 @@ class SettingsScreen(Screen):
 
     #button_grid {
         width: 80;
-        height: 15;
+        height: 17;
         layer: overlay;
-        grid-size: 3 2;
+        grid-size: 3 3;
         grid-gutter: 1 2;
     }
 
@@ -125,7 +126,7 @@ class SettingsScreen(Screen):
 
     #status {
         text-align: center;
-        margin-top: 15;
+        margin-top: 25;
     }
     """
 
@@ -136,8 +137,14 @@ class SettingsScreen(Screen):
                 Button("[u]W[/u]ifi", id="wifi_btn", variant="primary"),
                 Button("[u]A[/u]udio", id="audio_btn", variant="primary"),
                 Button("[u]U[/u]RLs", id="squobert_ui_btn", variant="primary"),
+                Button(
+                    "[u]C[/u]amera Preview", id="camera_preview_btn", variant="primary"
+                ),
                 Button("[u]N[/u]etwork Test", id="network_test_btn", variant="warning"),
                 Button("[u]T[/u]erminal", id="terminal_btn", variant="error"),
+                Button(
+                    "Update & [u]R[/u]eboot", id="update_reboot_btn", variant="error"
+                ),
                 Button("[u]B[/u]ack", id="back_btn"),
                 id="button_grid",
             ),
@@ -154,10 +161,14 @@ class SettingsScreen(Screen):
             self.action_audio()
         elif button_id == "squobert_ui_btn":
             self.action_squobert_ui()
+        elif button_id == "camera_preview_btn":
+            self.action_camera_preview()
         elif button_id == "network_test_btn":
             self.action_network_test()
         elif button_id == "terminal_btn":
             self.action_terminal()
+        elif button_id == "update_reboot_btn":
+            self.action_update_and_reboot()
         elif button_id == "back_btn":
             self.action_back()
 
@@ -188,6 +199,13 @@ class SettingsScreen(Screen):
     def action_squobert_ui(self) -> None:
         """Open URL configuration screen"""
         self.app.push_screen(ServerInputScreen())
+
+    def action_camera_preview(self) -> None:
+        """Open camera preview screen"""
+
+        success, message = launch_in_terminal("ffplay /dev/video0")
+        status_widget = self.query_one("#status", Static)
+        status_widget.update(message)
 
     def action_network_test(self) -> None:
         """Launch network test URL in kiosk mode"""
