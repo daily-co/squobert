@@ -17,7 +17,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 72vw;
+    width: 80vw;
     aspect-ratio: 2 / 1;
     box-sizing: border-box;
 }
