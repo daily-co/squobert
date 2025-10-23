@@ -26,7 +26,10 @@ class Config:
             self._config = {
                 "squobert_ui": {
                     "url": "https://squobert.vercel.app",
-                }
+                },
+                "network_test": {
+                    "url": "https://network-test-v2.daily.co",
+                },
             }
             self._save()
 

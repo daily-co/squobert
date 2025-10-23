@@ -11,6 +11,7 @@ from textual.binding import Binding
 
 from widgets.display import LayeredDisplay
 from utils.config import get_config
+from utils import launch_url_in_kiosk
 from utils.audio import get_default_audio_devices, get_device_display_name
 from utils.network import get_wifi_info, format_network_status
 
@@ -111,18 +112,8 @@ class MainMenuScreen(Screen):
             config = get_config()
             url = config.get("squobert_ui.url", "https://squobert.vercel.app")
 
-            # Launch Chromium in the background without blocking
-            # Using Popen instead of run so it doesn't wait for the browser to close
-            subprocess.Popen(
-                [
-                    "chromium",
-                    "--kiosk",
-                    url,
-                ],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                start_new_session=True,  # Detach from parent process
-            )
+            # Launch URL in kiosk mode
+            launch_url_in_kiosk(url)
         except Exception as e:
             # Show error in a way that's visible in the TUI
             from textual.widgets import Label
