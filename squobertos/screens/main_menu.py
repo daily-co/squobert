@@ -52,6 +52,8 @@ class MainMenuScreen(Screen):
         # Load initial status displays
         self.update_audio_status()
         self.update_network_status()
+        # Set up 5-second refresh for network status
+        self.set_interval(5.0, self.update_network_status)
 
     def on_screen_resume(self) -> None:
         """Called when returning to this screen from another screen"""
@@ -64,19 +66,26 @@ class MainMenuScreen(Screen):
         try:
             input_id, input_name, output_id, output_name = get_default_audio_devices()
 
-            # Get user-friendly names
-            input_display = get_device_display_name(input_name)
-            output_display = get_device_display_name(output_name)
-
-            status_text = f"♪ Input: {input_display} | ♫ Output: {output_display}"
+            # Check if both devices are Jabra SPEAK 410
+            if "Jabra SPEAK 410" in input_name and "Jabra SPEAK 410" in output_name:
+                status_text = "♪ Audio: Jabra SPEAK 410"
+                status_color = "green"
+            else:
+                # Get user-friendly names
+                input_display = get_device_display_name(input_name)
+                output_display = get_device_display_name(output_name)
+                status_text = f"♪ Input: {input_display} | ♫ Output: {output_display}"
+                status_color = "orange"
 
             audio_status = self.query_one("#audio_status", Static)
-            audio_status.update(status_text)
+            audio_status.update(f"[{status_color}]{status_text}[/{status_color}]")
         except Exception:
             # If we can't get audio status, show error
             try:
                 audio_status = self.query_one("#audio_status", Static)
-                audio_status.update("♪ Input: Unknown | ♫ Output: Unknown")
+                audio_status.update(
+                    "[orange]♪ Input: Unknown | ♫ Output: Unknown[/orange]"
+                )
             except Exception:
                 pass
 
@@ -86,13 +95,19 @@ class MainMenuScreen(Screen):
             ssid, ip = get_wifi_info()
             status_text = format_network_status(ssid, ip)
 
+            # Green if WiFi is connected and has an IP, orange otherwise
+            if ssid and ip:
+                status_color = "green"
+            else:
+                status_color = "orange"
+
             network_status = self.query_one("#network_status", Static)
-            network_status.update(status_text)
+            network_status.update(f"[{status_color}]{status_text}[/{status_color}]")
         except Exception:
             # If we can't get network status, show error
             try:
                 network_status = self.query_one("#network_status", Static)
-                network_status.update("◉ Network: Unknown")
+                network_status.update("[orange]◉ Network: Unknown[/orange]")
             except Exception:
                 pass
 

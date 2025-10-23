@@ -48,6 +48,9 @@ class SquobertOS(App):
         """Update the presence status indicator"""
         import requests
 
+        status_text = ""
+        status_color = "red"  # Default to red
+
         try:
             response = requests.get("http://localhost:8765/status", timeout=1)
             if response.status_code == 200:
@@ -56,23 +59,28 @@ class SquobertOS(App):
 
                 if not available:
                     status_text = "● Presence: Unavailable (OpenCV not installed)"
+                    status_color = "red"
                 else:
                     present = data.get("present", False)
                     face_count = data.get("face_count", 0)
                     if present:
                         status_text = f"● Presence: Active ({face_count} face{'s' if face_count != 1 else ''})"
+                        status_color = "green"
                     else:
                         status_text = "● Presence: No faces detected"
+                        status_color = "orange"
             else:
                 status_text = "● Presence: Error"
+                status_color = "red"
         except Exception:
             status_text = "● Presence: Starting..."
+            status_color = "orange"
 
         # Update the status widget if it exists and we're on the main screen
         try:
             if hasattr(self.screen, "query_one"):
                 status_widget = self.screen.query_one("#presence_status", Static)
-                status_widget.update(status_text)
+                status_widget.update(f"[{status_color}]{status_text}[/{status_color}]")
         except Exception:
             pass  # Widget not found or screen changed
 
