@@ -29,7 +29,7 @@ export function SleepingZs() {
       {/* First Z */}
       <text
         x="80"
-        y="0"
+        y="-40"
         fontSize="24"
         fontFamily="'Fredoka', 'Comic Sans MS', 'Marker Felt', cursive"
         fontWeight="600"
@@ -37,7 +37,7 @@ export function SleepingZs() {
         opacity="0"
       >
         z
-        <animate attributeName="y" from="0" to="-90" dur="3s" begin="0s" />
+        <animate attributeName="y" from="-40" to="-90" dur="3s" begin="0s" />
         <animate
           attributeName="opacity"
           values="0;1;1;0"
@@ -56,7 +56,7 @@ export function SleepingZs() {
       {/* Second Z */}
       <text
         x="115"
-        y="0"
+        y="-40"
         fontSize="24"
         fontFamily="'Fredoka', 'Comic Sans MS', 'Marker Felt', cursive"
         fontWeight="600"
@@ -64,7 +64,7 @@ export function SleepingZs() {
         opacity="0"
       >
         z
-        <animate attributeName="y" from="0" to="-100" dur="3s" begin="0.3s" />
+        <animate attributeName="y" from="-40" to="-100" dur="3s" begin="0.3s" />
         <animate
           attributeName="opacity"
           values="0;1;1;0"
@@ -83,7 +83,7 @@ export function SleepingZs() {
       {/* Third Z */}
       <text
         x="155"
-        y="0"
+        y="-40"
         fontSize="24"
         fontFamily="'Fredoka', 'Comic Sans MS', 'Marker Felt', cursive"
         fontWeight="600"
@@ -91,7 +91,7 @@ export function SleepingZs() {
         opacity="0"
       >
         z
-        <animate attributeName="y" from="0" to="-110" dur="3s" begin="0.6s" />
+        <animate attributeName="y" from="-40" to="-110" dur="3s" begin="0.6s" />
         <animate
           attributeName="opacity"
           values="0;1;1;0"
