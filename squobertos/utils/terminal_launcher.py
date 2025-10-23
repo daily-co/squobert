@@ -43,6 +43,7 @@ def launch_in_terminal(command: str) -> tuple[bool, str]:
         ],
         ["ghostty", "-e", command],  # selfish, for Chad
         # And some fallbacks
+        [ "xterm", "-e", command],
         ["x-terminal-emulator", "-e", command],
         ["gnome-terminal", "--", command],
         ["konsole", "-e", command],
