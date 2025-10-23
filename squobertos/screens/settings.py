@@ -225,14 +225,14 @@ class SettingsScreen(Screen):
             # Update the button label and variant
             presence_btn = self.query_one("#presence_btn", Button)
             if new_state:
-                presence_btn.label = "[u]P[/u]resence Detector Enabled"
+                presence_btn.label = "[u]P[/u]resence Enabled"
                 presence_btn.variant = "success"
                 status_message = "[green]✓ Presence detector enabled[/green]"
                 # Start the presence service
                 if hasattr(self.app, "presence_service"):
                     self.app.presence_service.start()
             else:
-                presence_btn.label = "[u]P[/u]resence Detector Disabled"
+                presence_btn.label = "[u]P[/u]resence Disabled"
                 presence_btn.variant = "error"
                 status_message = "[orange]✓ Presence detector disabled[/orange]"
                 # Stop the presence service
