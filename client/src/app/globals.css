@@ -1,55 +1,61 @@
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap');
-@import '@pipecat-ai/voice-ui-kit/styles';
+@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap");
+@import "@pipecat-ai/voice-ui-kit/styles";
 
 .face-stage {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  margin-bottom: 20%;
-  box-sizing: border-box;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    margin-bottom: 20%;
+    box-sizing: border-box;
 }
 
 .face-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  min-height: 320px;
-  box-sizing: border-box;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    min-height: 320px;
+    box-sizing: border-box;
 }
 
 .face {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  aspect-ratio: 1 / 1;
-  background: linear-gradient(180deg, #f8f3e8 0%, #e8dcc6 100%);
-  box-shadow: 0 28px 60px rgba(0, 0, 0, 0.18), inset 0 12px 20px rgba(255, 255, 255, 0.35);
-  overflow: hidden;
-  transition: transform 0.24s ease, filter 0.24s ease;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 1 / 1;
+    background: linear-gradient(180deg, #f8f3e8 0%, #e8dcc6 100%);
+    box-shadow:
+        0 28px 60px rgba(0, 0, 0, 0.18),
+        inset 0 12px 20px rgba(255, 255, 255, 0.35);
+    overflow: hidden;
+    transition:
+        transform 0.24s ease,
+        filter 0.24s ease;
 }
-.face svg {margin: 10%;}
+.face svg {
+    margin: 10%;
+}
 
 .face.talking {
-  transform: scale(1.05);
+    transform: scale(1.05);
 }
 
 .face.showing-text {
-  filter: brightness(0.95);
+    filter: brightness(0.95);
 }
 
 .face .eyes,
 .face .eyebrows,
 .face .mouth-shape,
 .face .blush {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
 }
 
 .face .eyes circle,
@@ -57,250 +63,252 @@
 .face .mouth-shape path,
 .face .eyebrows path,
 .face .blush ellipse {
-  transition: all 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .face.talking .mouth-shape path {
-  transition: none;
-  animation: talk 0.2s infinite alternate steps(2);
+    transition: none;
+    animation: talk 0.2s infinite alternate steps(2);
 }
 
 @keyframes talk {
-  from {
-    d: path("M 250 210 Q 300 240, 350 210");
-    fill: none;
-    stroke: #000;
-    stroke-width: 8;
-    stroke-linecap: round;
-  }
-  to {
-    d: path("M 250 194 A 50 50 0 0 0 350 194");
-    fill: #000;
-    stroke: none;
-  }
+    from {
+        d: path("M -50 10 Q 0 40, 50 10");
+        fill: none;
+        stroke: #000;
+        stroke-width: 8;
+        stroke-linecap: round;
+    }
+    to {
+        d: path("M -50 -6 A 50 50 0 0 0 50 -6");
+        fill: #000;
+        stroke: none;
+    }
 }
 
 /* Sleeping animations */
 .sleeping-zs {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
 }
 
 .face.listening .eyebrows {
-  transform: translateY(-20px);
+    transform: translateY(-20px);
 }
 
 .face-container .text-panel,
 .face-container .thinking-bubble {
-  position: absolute;
-  top: 18%;
-  right: 10%;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  z-index: 2;
+    position: absolute;
+    top: 18%;
+    right: 10%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    z-index: 2;
 }
 
 .face-container .bubble-content {
-  background: #fff;
-  border: 3px solid #333;
-  padding: 20px 28px;
-  border-radius: 60px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  max-width: 380px;
-  min-width: 200px;
+    background: #fff;
+    border: 3px solid #333;
+    padding: 20px 28px;
+    border-radius: 60px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    max-width: 380px;
+    min-width: 200px;
 }
 
 .face-container .text-content {
-  font-family: 'Fredoka', 'Comic Sans MS', 'Marker Felt', cursive;
-  font-size: 30px;
-  font-weight: 600;
-  line-height: 1.4;
-  color: #333;
-  text-align: center;
+    font-family: "Fredoka", "Comic Sans MS", "Marker Felt", cursive;
+    font-size: 30px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #333;
+    text-align: center;
 }
 
 .face-container .bubble-tail {
-  position: relative;
-  width: 70px;
-  height: 90px;
-  margin-left: 10px;
+    position: relative;
+    width: 70px;
+    height: 90px;
+    margin-left: 10px;
 }
 
 .face-container .bubble-dot {
-  position: absolute;
-  background: #fff;
-  border: 3px solid #333;
-  border-radius: 50%;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    position: absolute;
+    background: #fff;
+    border: 3px solid #333;
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .face-container .bubble-dot.large {
-  width: 22px;
-  height: 22px;
-  top: 34px;
-  right: 40px;
+    width: 22px;
+    height: 22px;
+    top: 34px;
+    right: 40px;
 }
 
 .face-container .bubble-dot.medium {
-  width: 14px;
-  height: 14px;
-  top: 52px;
-  right: 18px;
+    width: 14px;
+    height: 14px;
+    top: 52px;
+    right: 18px;
 }
 
 .face-container .bubble-dot.small {
-  width: 9px;
-  height: 9px;
-  top: 74px;
-  right: 8px;
+    width: 9px;
+    height: 9px;
+    top: 74px;
+    right: 8px;
 }
 
 @media (max-width: 900px) {
-  .face {
-    max-width: 520px;
-    max-height: 520px;
-  }
+    .face {
+        max-width: 520px;
+        max-height: 520px;
+    }
 
-  .face-container .text-panel {
-    position: absolute;
-    top: auto;
-    bottom: -3.5rem;
-    right: 50%;
-    transform: translateX(50%);
-  }
+    .face-container .text-panel {
+        position: absolute;
+        top: auto;
+        bottom: -3.5rem;
+        right: 50%;
+        transform: translateX(50%);
+    }
 
-  .face-container .bubble-tail {
-    display: none;
-  }
+    .face-container .bubble-tail {
+        display: none;
+    }
 }
 
 .control-float {
-  position: absolute;
-  bottom: 26%;
-  left: 50%;
-  transform: translate(-50%, 50%);
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.75rem;
-  border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(10, 12, 20, 0.78);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(14px);
-  z-index: 5;
-  transition: background 0.3s ease, border 0.3s ease, box-shadow 0.3s ease;
+    position: absolute;
+    bottom: 26%;
+    left: 50%;
+    transform: translate(-50%, 50%);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(10, 12, 20, 0.78);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(14px);
+    z-index: 5;
+    transition:
+        background 0.3s ease,
+        border 0.3s ease,
+        box-shadow 0.3s ease;
 }
 
 .control-float.connected {
-  background: transparent;
-  border: 1px solid transparent;
-  box-shadow: none;
+    background: transparent;
+    border: 1px solid transparent;
+    box-shadow: none;
 }
 
 .control-float button {
-  border-radius: 9999px;
+    border-radius: 9999px;
 }
 
 .control-float.connected button {
-  opacity: 0.6;
+    opacity: 0.6;
 }
 
-
 .info-button {
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: 9999px;
-  border: 2px solid rgba(255, 255, 255, 0.65);
-  background: transparent;
-  color: rgba(255, 255, 255, 0.9);
-  font-weight: 700;
-  font-size: 1.1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 9999px;
+    border: 2px solid rgba(255, 255, 255, 0.65);
+    background: transparent;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 700;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
 }
 
 .info-button:hover,
 .info-button:focus-visible {
-  border-color: #fff;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.1);
+    border-color: #fff;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .control-modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(5, 7, 12, 0.65);
-  backdrop-filter: blur(6px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
-  z-index: 40;
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 7, 12, 0.65);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    z-index: 40;
 }
 
 .control-modal {
-  width: min(480px, 100%);
-  background: rgba(20, 24, 32, 0.95);
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
-  color: #f1f5f9;
+    width: min(480px, 100%);
+    background: rgba(20, 24, 32, 0.95);
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+    color: #f1f5f9;
 }
 
 .control-modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .control-modal-header h2 {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
 }
 
 .close-button {
-  background: none;
-  border: none;
-  font-size: 1.75rem;
-  line-height: 1;
-  color: rgba(255, 255, 255, 0.65);
-  cursor: pointer;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.75rem;
-  transition: all 0.2s ease;
+    background: none;
+    border: none;
+    font-size: 1.75rem;
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.65);
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.75rem;
+    transition: all 0.2s ease;
 }
 
 .close-button:hover,
 .close-button:focus-visible {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .control-modal-content {
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
 .control-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 }
 
 .control-section h3 {
-  margin: 0;
-  font-size: 0.95rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.75);
+    margin: 0;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.75);
 }

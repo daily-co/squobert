@@ -1,4 +1,4 @@
-import type { Expression } from './types';
+import type { Expression } from "./types";
 
 interface EyesProps {
   expression: Expression;
@@ -8,41 +8,95 @@ interface EyesProps {
 export function Eyes({ expression, isBlinking }: EyesProps) {
   return (
     <>
-      <svg className="eyes" viewBox="0 0 600 400">
-        {expression === 'sleeping' ? (
+      <svg className="eyes" viewBox="-300 -150 600 300">
+        {expression === "sleeping" ? (
           <>
             {/* Closed eyes for sleeping */}
-            <path d="M 90 180 Q 110 190, 130 180" fill="none" stroke="#000" strokeWidth="8" strokeLinecap="round" />
-            <path d="M 470 180 Q 490 190, 510 180" fill="none" stroke="#000" strokeWidth="8" strokeLinecap="round" />
+            <path
+              d="M -210 -20 Q -190 -10, -170 -20"
+              fill="none"
+              stroke="#000"
+              strokeWidth="8"
+              strokeLinecap="round"
+            />
+            <path
+              d="M 170 -20 Q 190 -10, 210 -20"
+              fill="none"
+              stroke="#000"
+              strokeWidth="8"
+              strokeLinecap="round"
+            />
           </>
-        ) : expression === 'laughing' ? (
+        ) : expression === "laughing" ? (
           <>
-            <path d="M 90 180 Q 110 160, 130 180" fill="none" stroke="#000" strokeWidth="8" strokeLinecap="round" />
-            <path d="M 470 180 Q 490 160, 510 180" fill="none" stroke="#000" strokeWidth="8" strokeLinecap="round" />
+            <path
+              d="M -210 -20 Q -190 -40, -170 -20"
+              fill="none"
+              stroke="#000"
+              strokeWidth="8"
+              strokeLinecap="round"
+            />
+            <path
+              d="M 170 -20 Q 190 -40, 210 -20"
+              fill="none"
+              stroke="#000"
+              strokeWidth="8"
+              strokeLinecap="round"
+            />
           </>
         ) : (
           <>
             {isBlinking ? (
               <>
-                <path d="M 90 180 L 130 180" stroke="#000" strokeWidth="8" strokeLinecap="round" />
-                <path d="M 470 180 L 510 180" stroke="#000" strokeWidth="8" strokeLinecap="round" />
+                <path
+                  d="M -210 -20 L -170 -20"
+                  stroke="#000"
+                  strokeWidth="8"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M 170 -20 L 210 -20"
+                  stroke="#000"
+                  strokeWidth="8"
+                  strokeLinecap="round"
+                />
               </>
             ) : (
               <>
-                <circle cx="110" cy="180" r="20" fill="#000" stroke="#000" strokeWidth="4" />
-                <circle cx="490" cy="180" r="20" fill="#000" stroke="#000" strokeWidth="4" />
-                {expression === 'kawaii' && (
+                <circle
+                  cx="-190"
+                  cy="-20"
+                  r="20"
+                  fill="#000"
+                  stroke="#000"
+                  strokeWidth="4"
+                />
+                <circle
+                  cx="190"
+                  cy="-20"
+                  r="20"
+                  fill="#000"
+                  stroke="#000"
+                  strokeWidth="4"
+                />
+                {expression === "kawaii" && (
                   <>
-                    <circle cx="100" cy="171" r="7" fill="#fff" />
-                    <circle cx="112" cy="183" r="4" fill="#fff" />
-                    <circle cx="480" cy="171" r="7" fill="#fff" />
-                    <circle cx="492" cy="183" r="4" fill="#fff" />
+                    <circle cx="-200" cy="-29" r="7" fill="#fff" />
+                    <circle cx="-188" cy="-17" r="4" fill="#fff" />
+                    <circle cx="180" cy="-29" r="7" fill="#fff" />
+                    <circle cx="192" cy="-17" r="4" fill="#fff" />
                   </>
                 )}
-                {expression === 'thinking' && (
+                {expression === "thinking" && (
                   <>
-                    <path d="M 90 180 A 20 20 0 0 1 110 160 L 110 180 Z" fill="#fff" />
-                    <path d="M 470 180 A 20 20 0 0 1 490 160 L 490 180 Z" fill="#fff" />
+                    <path
+                      d="M -210 -20 A 20 20 0 0 1 -190 -40 L -190 -20 Z"
+                      fill="#fff"
+                    />
+                    <path
+                      d="M 170 -20 A 20 20 0 0 1 190 -40 L 190 -20 Z"
+                      fill="#fff"
+                    />
                   </>
                 )}
               </>
@@ -51,18 +105,28 @@ export function Eyes({ expression, isBlinking }: EyesProps) {
         )}
       </svg>
 
-      {(expression === 'listening' || expression === 'thinking' || expression === 'nervous') && (
-        <svg className="eyebrows" viewBox="0 0 600 400">
+      {(expression === "listening" ||
+        expression === "thinking" ||
+        expression === "nervous") && (
+        <svg className="eyebrows" viewBox="-300 -150 600 300">
           <path
-            d={expression === 'nervous' ? 'M 64 140 Q 84 145, 104 130' : 'M 80 150 Q 100 140, 120 140'}
+            d={
+              expression === "nervous"
+                ? "M -236 -60 Q -216 -55, -196 -70"
+                : "M -220 -50 Q -200 -60, -180 -60"
+            }
             fill="none"
             stroke="#000"
             strokeWidth="8"
             strokeLinecap="round"
           />
-          {(expression === 'listening' || expression === 'nervous') && (
+          {(expression === "listening" || expression === "nervous") && (
             <path
-              d={expression === 'nervous' ? 'M 534 140 Q 514 145, 494 130' : 'M 520 150 Q 500 140, 480 140'}
+              d={
+                expression === "nervous"
+                  ? "M 234 -60 Q 214 -55, 194 -70"
+                  : "M 220 -50 Q 200 -60, 180 -60"
+              }
               fill="none"
               stroke="#000"
               strokeWidth="8"

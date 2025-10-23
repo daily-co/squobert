@@ -1,4 +1,4 @@
-import type { Expression } from './types';
+import type { Expression } from "./types";
 
 interface MouthProps {
   expression: Expression;
@@ -6,26 +6,58 @@ interface MouthProps {
 
 export function Mouth({ expression }: MouthProps) {
   return (
-    <svg className="mouth-shape" viewBox="0 0 600 400">
-      {expression === 'laughing' && <path d="M 250 194 A 50 50 0 0 0 350 194" fill="#000" stroke="none" />}
-      {expression === 'thinking' && (
-        <path d="M 270 210 Q 310 200, 330 220" fill="none" stroke="#000" strokeWidth="8" strokeLinecap="round" />
+    <svg className="mouth-shape" viewBox="-300 -150 600 300">
+      {expression === "laughing" && (
+        <path d="M -50 -6 A 50 50 0 0 0 50 -6" fill="#000" stroke="none" />
       )}
-      {expression === 'resting' && (
-        <path d="M 250 210 Q 300 240, 350 210" fill="none" stroke="#000" strokeWidth="8" strokeLinecap="round" />
+      {expression === "thinking" && (
+        <path
+          d="M -30 10 Q 10 0, 30 20"
+          fill="none"
+          stroke="#000"
+          strokeWidth="8"
+          strokeLinecap="round"
+        />
       )}
-      {expression === 'listening' && (
-        <path d="M 280 210 L 320 210" fill="none" stroke="#000" strokeWidth="8" strokeLinecap="round" />
+      {expression === "resting" && (
+        <path
+          d="M -50 10 Q 0 40, 50 10"
+          fill="none"
+          stroke="#000"
+          strokeWidth="8"
+          strokeLinecap="round"
+        />
       )}
-      {expression === 'kawaii' && (
+      {expression === "listening" && (
+        <path
+          d="M -20 10 L 20 10"
+          fill="none"
+          stroke="#000"
+          strokeWidth="8"
+          strokeLinecap="round"
+        />
+      )}
+      {expression === "kawaii" && (
         <>
-          <path d="M 250 210 Q 275 230, 300 210" fill="none" stroke="#000" strokeWidth="8" strokeLinecap="round" />
-          <path d="M 300 210 Q 325 230, 350 210" fill="none" stroke="#000" strokeWidth="8" strokeLinecap="round" />
+          <path
+            d="M -50 10 Q -25 30, 0 10"
+            fill="none"
+            stroke="#000"
+            strokeWidth="8"
+            strokeLinecap="round"
+          />
+          <path
+            d="M 0 10 Q 25 30, 50 10"
+            fill="none"
+            stroke="#000"
+            strokeWidth="8"
+            strokeLinecap="round"
+          />
         </>
       )}
-      {expression === 'nervous' && (
+      {expression === "nervous" && (
         <path
-          d="M 260 200 L 270 210 L 280 200 L 290 210 L 300 200 L 310 210 L 320 200 L 330 210 L 340 200"
+          d="M -40 0 L -30 10 L -20 0 L -10 10 L 0 0 L 10 10 L 20 0 L 30 10 L 40 0"
           fill="none"
           stroke="#000"
           strokeWidth="8"
@@ -33,10 +65,22 @@ export function Mouth({ expression }: MouthProps) {
           strokeLinejoin="round"
         />
       )}
-      {expression === 'sleeping' && (
+      {expression === "sleeping" && (
         <>
-          <path d="M 250 210 Q 275 230, 300 210" fill="none" stroke="#000" strokeWidth="8" strokeLinecap="round" />
-          <path d="M 300 210 Q 325 230, 350 210" fill="none" stroke="#000" strokeWidth="8" strokeLinecap="round" />
+          <path
+            d="M -50 10 Q -25 30, 0 10"
+            fill="none"
+            stroke="#000"
+            strokeWidth="8"
+            strokeLinecap="round"
+          />
+          <path
+            d="M 0 10 Q 25 30, 50 10"
+            fill="none"
+            stroke="#000"
+            strokeWidth="8"
+            strokeLinecap="round"
+          />
         </>
       )}
     </svg>
