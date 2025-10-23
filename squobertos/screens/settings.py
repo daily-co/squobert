@@ -94,6 +94,7 @@ class SettingsScreen(Screen):
         Binding("u", "squobert_ui", "URLs"),
         Binding("n", "network_test", "Network Test"),
         Binding("t", "terminal", "Terminal"),
+        Binding("r", "update_and_reboot", "Update and Reboot"),
         Binding("b", "back", "Back"),
         Binding("q", "back", "Back"),
         Binding("escape", "back", "Back"),
@@ -219,6 +220,20 @@ class SettingsScreen(Screen):
             import sys
 
             print(f"Error in action_terminal: {e}", file=sys.stderr)
+
+    def action_update_and_reboot(self) -> None:
+        """Update code from git and reboot the system"""
+        try:
+            success, message = launch_in_terminal(
+                "bash -c 'cd ~/Code/squobert && git pull && reboot'"
+            )
+            status_widget = self.query_one("#status", Static)
+            status_widget.update(message if success else "✗ Failed to launch update")
+        except Exception as e:
+            # Log error but don't crash
+            import sys
+
+            print(f"Error in action_update_and_reboot: {e}", file=sys.stderr)
 
     def action_back(self) -> None:
         """Go back to previous screen"""
